@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_theme_system">Follow system</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Dynamic color</string>
+    <string name="settings_dynamic_color_summary">Use colors from your wallpaper (Android 12+)</string>
+
+    <string name="settings_section_list">Lists</string>
+    <string name="settings_default_tab">Default tab</string>
+    <string name="settings_media_anime">Anime</string>
+    <string name="settings_media_manga">Manga</string>
+    <string name="settings_default_view">Default list view</string>
+    <string name="settings_view_grid">Grid</string>
+    <string name="settings_view_compact">Compact</string>
+    <string name="settings_view_detailed">Detailed</string>
+    <string name="settings_hide_nsfw">Hide adult entries</string>
+    <string name="settings_hide_nsfw_summary">Skip titles MyAnimeList marks as NSFW</string>
+
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_airing_notifications">Airing reminders</string>
+    <string name="settings_airing_notifications_summary">Notify before the next episode airs</string>
+
+    <string name="settings_section_account">Account</string>
+    <string name="settings_logout">Sign out</string>
+    <string name="settings_logout_confirm">Your token and cached lists will be removed from this device.</string>
+    <string name="settings_signed_in_as">Signed in as %1$s</string>
+</resources>

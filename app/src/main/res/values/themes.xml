@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Acilis temasi. Uygulama icerigi tamamen Compose oldugu icin bu tema
+      yalnizca ilk kare cizilene kadar gorunur.
+    -->
+    <style name="Theme.MyAniTrack.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.MyAniTrack</item>
+    </style>
+
+    <style name="Theme.MyAniTrack" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/splash_background</item>
+    </style>
+</resources>

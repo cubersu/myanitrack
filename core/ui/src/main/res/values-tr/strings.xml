@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_network">Baglanti yok. Aginizi kontrol edip tekrar deneyin.</string>
+    <string name="error_unauthorized">Oturumunuzun suresi doldu. Lutfen tekrar giris yapin.</string>
+    <string name="error_forbidden">MyAnimeList bu istegi reddetti.</string>
+    <string name="error_not_found">MyAnimeList uzerinde bulunamadi.</string>
+    <string name="error_rate_limited">Cok fazla istek gonderildi. Biraz bekleyin.</string>
+    <string name="error_rate_limited_seconds">Cok fazla istek. %1$d saniye sonra tekrar deneyin.</string>
+    <string name="error_server">MyAnimeList sorun yasiyor (%1$d). Sonra tekrar deneyin.</string>
+    <string name="error_http">Istek basarisiz oldu (%1$d).</string>
+    <string name="error_serialization">MyAnimeList beklenmeyen bir yanit dondu.</string>
+    <string name="error_storage">Yerel veriler okunamadi.</string>
+    <string name="error_feature_unavailable">Bu ozellik su an kullanilamiyor.</string>
+    <string name="error_unknown">Bir seyler ters gitti.</string>
+
+    <string name="action_retry">Tekrar dene</string>
+    <string name="action_cancel">Vazgec</string>
+    <string name="action_save">Kaydet</string>
+    <string name="action_delete">Sil</string>
+    <string name="action_refresh">Yenile</string>
+</resources>

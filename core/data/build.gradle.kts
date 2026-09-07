@@ -45,6 +45,11 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    testImplementation(libs.okhttp)
+    testImplementation(libs.retrofit)
+    testImplementation(project(":core:database"))
+    testImplementation(project(":core:network"))
+
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.jupiter.params)

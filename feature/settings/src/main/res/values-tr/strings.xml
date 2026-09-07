@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Ayarlar</string>
+
+    <string name="settings_section_appearance">Gorunum</string>
+    <string name="settings_theme_system">Sistemi izle</string>
+    <string name="settings_theme_light">Acik</string>
+    <string name="settings_theme_dark">Koyu</string>
+    <string name="settings_dynamic_color">Dinamik renk</string>
+    <string name="settings_dynamic_color_summary">Duvar kagidindan turetilen renkleri kullan (Android 12+)</string>
+
+    <string name="settings_section_list">Listeler</string>
+    <string name="settings_default_tab">Varsayilan sekme</string>
+    <string name="settings_default_view">Varsayilan liste gorunumu</string>
+    <string name="settings_view_grid">Izgara</string>
+    <string name="settings_view_compact">Kompakt</string>
+    <string name="settings_view_detailed">Detayli</string>
+    <string name="settings_hide_nsfw">Yetiskin icerigi gizle</string>
+    <string name="settings_hide_nsfw_summary">MyAnimeList tarafindan NSFW isaretlenen yapimlari atla</string>
+
+    <string name="settings_section_notifications">Bildirimler</string>
+    <string name="settings_airing_notifications">Yayin hatirlatmalari</string>
+    <string name="settings_airing_notifications_summary">Yeni bolum yayinlanmadan once bildir</string>
+
+    <string name="settings_section_account">Hesap</string>
+    <string name="settings_logout">Cikis yap</string>
+    <string name="settings_logout_confirm">Token-iniz ve onbellekteki listeler bu cihazdan silinecek.</string>
+    <string name="settings_signed_in_as">%1$s olarak giris yapildi</string>
+</resources>

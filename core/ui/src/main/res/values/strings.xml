@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Hata mesajlari -->
+    <string name="error_network">No connection. Check your network and try again.</string>
+    <string name="error_unauthorized">Your session expired. Please sign in again.</string>
+    <string name="error_forbidden">MyAnimeList refused this request.</string>
+    <string name="error_not_found">Not found on MyAnimeList.</string>
+    <string name="error_rate_limited">Too many requests. Please wait a moment.</string>
+    <string name="error_rate_limited_seconds">Too many requests. Try again in %1$d seconds.</string>
+    <string name="error_server">MyAnimeList is having trouble (%1$d). Try again later.</string>
+    <string name="error_http">Request failed (%1$d).</string>
+    <string name="error_serialization">Unexpected response from MyAnimeList.</string>
+    <string name="error_storage">Could not read local data.</string>
+    <string name="error_feature_unavailable">This feature is currently unavailable.</string>
+    <string name="error_unknown">Something went wrong.</string>
+
+    <!-- Ortak eylemler -->
+    <string name="action_retry">Retry</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_refresh">Refresh</string>
+</resources>

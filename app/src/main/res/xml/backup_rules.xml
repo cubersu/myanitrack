@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Sifreli oturum dosyasi Keystore anahtarina bagli; yedeklenirse
+         baska cihazda cozulemez. Onbellek veritabani da yedeklenmez. -->
+    <exclude domain="file" path="datastore/auth_session.pb" />
+    <exclude domain="database" path="myanitrack.db" />
+</full-backup-content>
