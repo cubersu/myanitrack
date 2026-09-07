@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browse_tab_top">En iyiler</string>
+    <string name="browse_tab_season">Sezon</string>
+    <string name="browse_tab_search">Ara</string>
+    <string name="browse_tab_recommendations">Oneriler</string>
+
+    <string name="browse_top_all">Tum zamanlar</string>
+    <string name="browse_top_airing">Yayinda</string>
+    <string name="browse_top_publishing">Yayimlaniyor</string>
+    <string name="browse_top_upcoming">Yakinda</string>
+    <string name="browse_top_popularity">En populer</string>
+    <string name="browse_top_favorite">En cok favorilenen</string>
+
+    <string name="browse_search_label">Anime ve manga ara</string>
+    <string name="browse_previous_season">Onceki sezon</string>
+    <string name="browse_next_season">Sonraki sezon</string>
+    <string name="browse_score">Puan %1$.2f</string>
+
+    <string name="browse_error_title">Yuklenemedi</string>
+    <string name="browse_empty_title">Sonuc yok</string>
+    <string name="browse_empty_description">Farkli bir arama terimi ya da filtre deneyin.</string>
+
+    <string name="browse_if_you_liked">Bunu begendiysen</string>
+    <string name="browse_then_try">Bunu dene</string>
+</resources>

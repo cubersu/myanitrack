@@ -15,8 +15,8 @@ mümkün olan her yerde **resmî ve stabil API'leri** kullanır; scraping gerekt
 | Faz | Kapsam | Durum |
 |-----|--------|-------|
 | 1 | Proje iskeleti, MAL OAuth2 girişi, liste CRUD, liste görünümleri | ✅ Tamamlandı |
-| 2 | Jikan entegrasyonu, detay sayfası, arama, top/sezonluk listeler | ⬜ Sırada |
-| 3 | Yayın takvimi + geri sayım bildirimleri, haberler | ⬜ |
+| 2 | Jikan entegrasyonu, detay sayfası, arama, top/sezonluk listeler | ✅ Tamamlandı |
+| 3 | Yayın takvimi + geri sayım bildirimleri, haberler | ⬜ Sırada |
 | 4 | Profil sayfaları, RSS arkadaş akışı, geçmiş | ⬜ |
 | 5 | Forum ve mesajlaşma (WebView — Seçenek A) | ⬜ |
 | 6 | Ayarlar cilası, deep link, animasyonlar, offline mod | ⬜ |
@@ -91,7 +91,7 @@ gerektiğini açıkça söyler.
 :feature:mylist         Anime/manga liste yönetimi          ← Faz 1
 :feature:settings       Tema, liste tercihleri, çıkış        ← Faz 1 (temel)
 :feature:details        Anime/manga detay sayfası            ← Faz 2
-:feature:browse         Top, sezonluk, tür/stüdyo, arama     ← Faz 2
+:feature:browse         Top, sezonluk, tür, arama, öneriler  ← Faz 2
 :feature:calendar       Yayın takvimi + geri sayım           ← Faz 3
 :feature:news           MAL haberleri                        ← Faz 3
 :feature:profile        Profil, arkadaş akışı, geçmiş        ← Faz 4
@@ -158,21 +158,62 @@ aynı repository arayüzünün arkasında denenebilir.
 **Diğer**
 - Material 3 dinamik renk (Android 12+), açık/koyu/sistem teması
 - Arayüz metinleri İngilizce, Türkçe çeviri (`values-tr`) dahil
-- 50 birim testi (filtre/sıralama, use case'ler, DTO mapper'ları, repository, ViewModel)
+- Birim testleri (filtre/sıralama, use case'ler, DTO mapper'ları, repository, ViewModel)
+
+---
+
+## Faz 2'de neler var
+
+**Jikan v4 entegrasyonu (salt okunur)**
+- İstemci tarafı hız sınırlama: **3 istek/sn ve 60 istek/dk**, kayan pencere ile.
+  429 yiyip geri çekilmek yerine limiti hiç aşmıyoruz.
+- 429/500/502/503/504 için üstel geri çekilmeli otomatik yeniden deneme (1s → 2s → 4s).
+  Jikan'ın upstream'i (MAL) sık sık 504 döndürüyor; bu katman onu kullanıcıya göstermiyor.
+- **cache-then-network:** Room'daki `remote_cache` tablosu. Taze kayıt varsa ağa hiç
+  dokunulmaz; ağ hata verir ve elde bayat kayıt varsa **bayat kayıt döndürülür** —
+  Jikan çöktüğünde ekran boşalmaz. TTL: detay 24s, karakter/staff 7g, listeler 6s, türler 30g.
+- Bozuk önbellek kaydı uygulamayı çökertmez: silinir, ağdan tazelenir.
+
+**Detay sayfası**
+- Özet (genişletilebilir), tür/tema/demografi, tam bilgi tablosu (tip, durum, bölüm,
+  süre, yayın tarihi, sezon, yayın zamanı, kaynak, yaş sınırı, stüdyo/yazar, üye, favori)
+- Karakterler (ana karakterler önce, Japonca seslendirenle birlikte) ve ekip
+- İlişkili yapımlar (Sequel/Prequel/Adaptation…) — dokununca o yapıma gider
+- Öneriler, açılış/kapanış müzikleri
+- İncelemeler — Paging 3 ile sayfalı, spoiler'lar dokunulana kadar gizli
+- Tanıtım videoları — YouTube'a devrediliyor (gömülü WebView oynatıcı yerine)
+- Listeye ekleme (durum seçerek) ve liste kaydını düzenleme/silme
+- **Kısmi hata toleransı:** yalnızca ana detay çağrısının başarısızlığı ekranı hataya
+  düşürür; karakter/öneri/video uçlarından biri 504 verirse sayfanın geri kalanı görünür.
+
+**Keşfet sekmesi**
+- **Top:** tüm zamanlar / yayında / yakında / en popüler / en çok favorilenen
+  (manga tarafında "yayında" yerine "yayımlanıyor" — geçersiz filtre otomatik sıfırlanır)
+- **Sezon:** sezon + yıl ileri/geri gezinme, mevcut sezondan başlar
+- **Arama:** 400 ms debounce (Jikan limiti için kritik) + tür filtresi
+- **Öneriler:** "Bunu beğendiysen bunu dene" ikilileri
+- Tümü Paging 3 ile sonsuz kaydırma; yükleme/hata/boş durumları ayrı ayrı ele alınıyor
+
+**Diğer**
+- Listede: **dokun → detay**, **uzun bas → hızlı düzenleme**
+- Düzenleme sayfası `:core:ui`'ya taşındı; liste ve detay ekranları aynı bileşeni kullanıyor
+- Paging hataları `AppErrorException` ile domain hatasına sarılıyor — UI ham HTTP istisnası görmüyor
+- Alt gezinme çubuğuna **Keşfet** sekmesi eklendi; detay ekranında çubuk gizleniyor
 
 ---
 
 ## Bilinen sınırlar
 
-- **Detay sayfası henüz yok.** Listede bir kayda dokunmak düzenleme sayfasını açar;
-  tür/karakter/review gibi zengin veri Faz 2'de Jikan ile gelecek.
-- **Alt gezinme çubuğunda şimdilik 2 sekme var** (Listem, Ayarlar). Keşfet/Takvim/
-  Haberler/Profil sekmeleri ilgili fazlarda eklenecek.
+- **Alt gezinme çubuğunda 3 sekme var** (Listem, Keşfet, Ayarlar). Takvim/Haberler/Profil
+  sekmeleri ilgili fazlarda eklenecek.
+- **Stüdyo bazlı gezinme henüz yok.** Jikan `producers` parametresi servis katmanında
+  hazır ama Keşfet ekranında yalnızca tür filtresi açık.
 - **Çevrimdışı düzenleme kuyruğu yok.** Ağ yokken yapılan değişiklik geri alınır ve
   hata gösterilir. `pendingSync` alanı ve DAO sorgusu bu iş için hazır bekliyor (Faz 6).
 - **Deep link kısmen hazır.** `myanitrack://` şeması kayıtlı ve OAuth dönüşü çalışıyor;
-  `myanitrack://anime/<id>` gibi içerik bağlantıları detay sayfasıyla birlikte gelecek.
+  `myanitrack://anime/<id>` gibi içerik bağlantıları Faz 6'da bağlanacak.
 - **Bildirim izni manifest'te tanımlı** ama çalışma zamanı isteği Faz 3'te eklenecek.
+- **Manga incelemeleri Jikan'da anime kadar zengin değil**; bazı başlıklarda boş gelebilir.
 
 ---
 

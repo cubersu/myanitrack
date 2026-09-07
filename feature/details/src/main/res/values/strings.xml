@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_back">Back</string>
+    <string name="details_open_on_mal">Open on MyAnimeList</string>
+    <string name="details_unavailable_title">Could not load this title</string>
+    <string name="details_add_to_list">Add to my list</string>
+    <string name="details_edit_entry">Edit my entry</string>
+    <string name="details_added_to_list">Added %1$s to your list</string>
+    <string name="details_score_with_users">Score %1$.2f (%2$d users)</string>
+    <string name="details_rank">Ranked #%1$d</string>
+    <string name="details_show_more">Show more</string>
+    <string name="details_show_less">Show less</string>
+    <string name="details_play_trailer">Play trailer</string>
+    <string name="details_reveal_spoiler">This review contains spoilers. Tap to reveal.</string>
+    <string name="details_preliminary_review">Preliminary review</string>
+    <string name="details_review_score">Score %1$d</string>
+
+    <string name="details_section_genres">Genres</string>
+    <string name="details_section_synopsis">Synopsis</string>
+    <string name="details_section_information">Information</string>
+    <string name="details_section_videos">Videos</string>
+    <string name="details_section_characters">Characters</string>
+    <string name="details_section_staff">Staff</string>
+    <string name="details_section_related">Related</string>
+    <string name="details_section_recommendations">Recommendations</string>
+    <string name="details_section_theme_songs">Theme songs</string>
+    <string name="details_section_reviews">Reviews</string>
+
+    <string name="details_info_type">Type</string>
+    <string name="details_info_status">Status</string>
+    <string name="details_info_episodes">Episodes</string>
+    <string name="details_info_chapters">Chapters</string>
+    <string name="details_info_volumes">Volumes</string>
+    <string name="details_info_duration">Duration</string>
+    <string name="details_info_aired">Aired</string>
+    <string name="details_info_season">Season</string>
+    <string name="details_info_broadcast">Broadcast</string>
+    <string name="details_info_source">Source</string>
+    <string name="details_info_rating">Rating</string>
+    <string name="details_info_studios">Studios</string>
+    <string name="details_info_authors">Authors</string>
+    <string name="details_info_members">Members</string>
+    <string name="details_info_favorites">Favorites</string>
+
+    <string name="details_status_watching">Watching</string>
+    <string name="details_status_reading">Reading</string>
+    <string name="details_status_completed">Completed</string>
+    <string name="details_status_on_hold">On hold</string>
+    <string name="details_status_dropped">Dropped</string>
+    <string name="details_status_plan_to_watch">Plan to watch</string>
+    <string name="details_status_plan_to_read">Plan to read</string>
+</resources>

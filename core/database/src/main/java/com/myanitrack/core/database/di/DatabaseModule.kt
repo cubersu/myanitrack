@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.myanitrack.core.database.MyAniTrackDatabase
 import com.myanitrack.core.database.dao.MediaListDao
+import com.myanitrack.core.database.dao.RemoteCacheDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,4 +27,8 @@ object DatabaseModule {
 
     @Provides
     fun providesMediaListDao(database: MyAniTrackDatabase): MediaListDao = database.mediaListDao()
+
+    @Provides
+    fun providesRemoteCacheDao(database: MyAniTrackDatabase): RemoteCacheDao =
+        database.remoteCacheDao()
 }

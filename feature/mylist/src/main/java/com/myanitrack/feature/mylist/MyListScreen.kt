@@ -65,12 +65,13 @@ import com.myanitrack.core.ui.ObserveAsEvents
 import com.myanitrack.core.ui.toUserMessage
 import com.myanitrack.feature.mylist.component.CompactListItem
 import com.myanitrack.feature.mylist.component.DetailedListItem
-import com.myanitrack.feature.mylist.component.EditEntrySheet
+import com.myanitrack.core.ui.component.ListEntryEditSheet
 import com.myanitrack.feature.mylist.component.GridListItem
 import kotlinx.coroutines.launch
 
 @Composable
 fun MyListRoute(
+    onOpenDetails: (MediaType, Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MyListViewModel = hiltViewModel(),
 ) {
@@ -104,7 +105,8 @@ fun MyListRoute(
         onSortChange = viewModel::setSort,
         onRefresh = viewModel::refresh,
         onIncrement = viewModel::incrementProgress,
-        onEntryClick = viewModel::startEditing,
+        onEntryClick = { entry -> onOpenDetails(entry.mediaType, entry.id) },
+        onEntryLongClick = viewModel::startEditing,
         onDismissEdit = viewModel::stopEditing,
         onSaveEdit = viewModel::saveEdit,
         onDeleteEntry = viewModel::deleteEntry,
@@ -126,6 +128,7 @@ internal fun MyListScreen(
     onRefresh: () -> Unit,
     onIncrement: (MediaListEntry) -> Unit,
     onEntryClick: (MediaListEntry) -> Unit,
+    onEntryLongClick: (MediaListEntry) -> Unit,
     onDismissEdit: () -> Unit,
     onSaveEdit: (MediaListEntry, ListStatusUpdate) -> Unit,
     onDeleteEntry: (MediaListEntry) -> Unit,
@@ -182,6 +185,7 @@ internal fun MyListScreen(
                     entries = uiState.entries,
                     viewMode = uiState.viewMode,
                     onEntryClick = onEntryClick,
+                    onEntryLongClick = onEntryLongClick,
                     onIncrement = onIncrement,
                 )
             }
@@ -189,7 +193,7 @@ internal fun MyListScreen(
     }
 
     uiState.editingEntry?.let { entry ->
-        EditEntrySheet(
+        ListEntryEditSheet(
             entry = entry,
             onDismiss = onDismissEdit,
             onSave = { update -> onSaveEdit(entry, update) },
@@ -203,6 +207,7 @@ private fun MyListContent(
     entries: List<MediaListEntry>,
     viewMode: ListViewMode,
     onEntryClick: (MediaListEntry) -> Unit,
+    onEntryLongClick: (MediaListEntry) -> Unit,
     onIncrement: (MediaListEntry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -215,7 +220,11 @@ private fun MyListContent(
             modifier = modifier.fillMaxSize(),
         ) {
             items(entries, key = { it.id }) { entry ->
-                GridListItem(entry = entry, onClick = { onEntryClick(entry) })
+                GridListItem(
+                    entry = entry,
+                    onClick = { onEntryClick(entry) },
+                    onLongClick = { onEntryLongClick(entry) },
+                )
             }
         }
 
@@ -224,6 +233,7 @@ private fun MyListContent(
                 CompactListItem(
                     entry = entry,
                     onClick = { onEntryClick(entry) },
+                    onLongClick = { onEntryLongClick(entry) },
                     onIncrement = { onIncrement(entry) },
                 )
             }
@@ -240,6 +250,7 @@ private fun MyListContent(
                 DetailedListItem(
                     entry = entry,
                     onClick = { onEntryClick(entry) },
+                    onLongClick = { onEntryLongClick(entry) },
                     onIncrement = { onIncrement(entry) },
                 )
             }
@@ -368,8 +379,8 @@ private fun MediaTypeToggle(
                 label = {
                     Text(
                         stringResource(
-                            if (type.isAnime) R.string.media_type_anime
-                            else R.string.media_type_manga,
+                            if (type.isAnime) com.myanitrack.core.ui.R.string.media_type_anime
+                            else com.myanitrack.core.ui.R.string.media_type_manga,
                         ),
                     )
                 },
@@ -405,7 +416,7 @@ private fun StatusTabs(
         Tab(
             selected = selected == null,
             onClick = { onSelect(null) },
-            text = { Text(stringResource(R.string.status_all)) },
+            text = { Text(stringResource(com.myanitrack.core.ui.R.string.status_all)) },
         )
     }
 }
@@ -456,11 +467,11 @@ private fun sortLabel(option: ListSortOption): String = stringResource(
 @Composable
 private fun statusTabLabel(status: ListStatus, isAnime: Boolean): String = stringResource(
     when (status) {
-        ListStatus.WATCHING -> if (isAnime) R.string.status_watching else R.string.status_reading
-        ListStatus.COMPLETED -> R.string.status_completed
-        ListStatus.ON_HOLD -> R.string.status_on_hold
-        ListStatus.DROPPED -> R.string.status_dropped
+        ListStatus.WATCHING -> if (isAnime) com.myanitrack.core.ui.R.string.status_watching else com.myanitrack.core.ui.R.string.status_reading
+        ListStatus.COMPLETED -> com.myanitrack.core.ui.R.string.status_completed
+        ListStatus.ON_HOLD -> com.myanitrack.core.ui.R.string.status_on_hold
+        ListStatus.DROPPED -> com.myanitrack.core.ui.R.string.status_dropped
         ListStatus.PLAN_TO_WATCH ->
-            if (isAnime) R.string.status_plan_to_watch else R.string.status_plan_to_read
+            if (isAnime) com.myanitrack.core.ui.R.string.status_plan_to_watch else com.myanitrack.core.ui.R.string.status_plan_to_read
     },
 )

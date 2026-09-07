@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browse_tab_top">Top</string>
+    <string name="browse_tab_season">Season</string>
+    <string name="browse_tab_search">Search</string>
+    <string name="browse_tab_recommendations">Recommendations</string>
+
+    <string name="browse_top_all">All time</string>
+    <string name="browse_top_airing">Airing</string>
+    <string name="browse_top_publishing">Publishing</string>
+    <string name="browse_top_upcoming">Upcoming</string>
+    <string name="browse_top_popularity">Most popular</string>
+    <string name="browse_top_favorite">Most favorited</string>
+
+    <string name="browse_search_label">Search anime and manga</string>
+    <string name="browse_previous_season">Previous season</string>
+    <string name="browse_next_season">Next season</string>
+    <string name="browse_score">Score %1$.2f</string>
+
+    <string name="browse_error_title">Could not load</string>
+    <string name="browse_empty_title">No results</string>
+    <string name="browse_empty_description">Try a different search term or filter.</string>
+
+    <string name="browse_if_you_liked">If you liked</string>
+    <string name="browse_then_try">Then try</string>
+</resources>

@@ -1,4 +1,4 @@
-package com.myanitrack.feature.mylist.component
+package com.myanitrack.core.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,7 +46,7 @@ import com.myanitrack.core.model.ListStatusUpdate
 import com.myanitrack.core.model.MediaListEntry
 import com.myanitrack.core.model.MyListStatus
 import com.myanitrack.core.model.scoreLabel
-import com.myanitrack.feature.mylist.R
+import com.myanitrack.core.ui.R
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -61,7 +61,7 @@ import java.time.format.DateTimeFormatter
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun EditEntrySheet(
+fun ListEntryEditSheet(
     entry: MediaListEntry,
     onDismiss: () -> Unit,
     onSave: (ListStatusUpdate) -> Unit,
@@ -96,7 +96,7 @@ internal fun EditEntrySheet(
         ) {
             Text(text = entry.node.title, style = MaterialTheme.typography.titleMedium)
 
-            SectionLabel(stringResource(R.string.mylist_field_status))
+            SectionLabel(stringResource(R.string.entry_field_status))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ListStatus.entries.forEach { option ->
                     FilterChip(
@@ -108,7 +108,7 @@ internal fun EditEntrySheet(
             }
 
             SectionLabel(
-                stringResource(R.string.mylist_field_score) +
+                stringResource(R.string.entry_field_score) +
                     if (score > 0) "  -  ${score.scoreLabel()}" else "",
             )
             Slider(
@@ -125,8 +125,8 @@ internal fun EditEntrySheet(
                     label = {
                         Text(
                             stringResource(
-                                if (isAnime) R.string.mylist_field_episodes
-                                else R.string.mylist_field_chapters,
+                                if (isAnime) R.string.entry_field_episodes
+                                else R.string.entry_field_chapters,
                             ),
                         )
                     },
@@ -138,7 +138,7 @@ internal fun EditEntrySheet(
                     OutlinedTextField(
                         value = volumes,
                         onValueChange = { volumes = it.filter(Char::isDigit) },
-                        label = { Text(stringResource(R.string.mylist_field_volumes)) },
+                        label = { Text(stringResource(R.string.entry_field_volumes)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.weight(1f),
@@ -155,8 +155,8 @@ internal fun EditEntrySheet(
             ) {
                 Text(
                     text = stringResource(
-                        if (isAnime) R.string.mylist_field_rewatching
-                        else R.string.mylist_field_rereading,
+                        if (isAnime) R.string.entry_field_rewatching
+                        else R.string.entry_field_rereading,
                     ),
                     style = MaterialTheme.typography.bodyLarge,
                 )
@@ -169,8 +169,8 @@ internal fun EditEntrySheet(
                 label = {
                     Text(
                         stringResource(
-                            if (isAnime) R.string.mylist_field_times_rewatched
-                            else R.string.mylist_field_times_reread,
+                            if (isAnime) R.string.entry_field_times_rewatched
+                            else R.string.entry_field_times_reread,
                         ),
                     )
                 },
@@ -182,13 +182,13 @@ internal fun EditEntrySheet(
             HorizontalDivider()
 
             DateRow(
-                label = stringResource(R.string.mylist_field_start_date),
+                label = stringResource(R.string.entry_field_start_date),
                 date = startDate,
                 onPick = { datePickerTarget = DateTarget.START },
                 onClear = { startDate = null },
             )
             DateRow(
-                label = stringResource(R.string.mylist_field_finish_date),
+                label = stringResource(R.string.entry_field_finish_date),
                 date = finishDate,
                 onPick = { datePickerTarget = DateTarget.FINISH },
                 onClear = { finishDate = null },
@@ -199,8 +199,8 @@ internal fun EditEntrySheet(
             OutlinedTextField(
                 value = tags,
                 onValueChange = { tags = it },
-                label = { Text(stringResource(R.string.mylist_field_tags)) },
-                supportingText = { Text(stringResource(R.string.mylist_field_tags_hint)) },
+                label = { Text(stringResource(R.string.entry_field_tags)) },
+                supportingText = { Text(stringResource(R.string.entry_field_tags_hint)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -208,7 +208,7 @@ internal fun EditEntrySheet(
             OutlinedTextField(
                 value = comments,
                 onValueChange = { comments = it },
-                label = { Text(stringResource(R.string.mylist_field_comments)) },
+                label = { Text(stringResource(R.string.entry_field_comments)) },
                 minLines = 2,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -220,7 +220,7 @@ internal fun EditEntrySheet(
                     Icon(Icons.Outlined.Delete, contentDescription = null)
                     Spacer(Modifier.height(0.dp))
                     Text(
-                        text = stringResource(com.myanitrack.core.ui.R.string.action_delete),
+                        text = stringResource(R.string.action_delete),
                         modifier = Modifier.padding(start = 8.dp),
                     )
                 }
@@ -246,7 +246,7 @@ internal fun EditEntrySheet(
                     },
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text(stringResource(com.myanitrack.core.ui.R.string.action_save))
+                    Text(stringResource(R.string.action_save))
                 }
             }
         }
@@ -292,7 +292,7 @@ private fun DateRow(
             Text(text = label, style = MaterialTheme.typography.labelLarge)
             Text(
                 text = date?.format(DateTimeFormatter.ISO_LOCAL_DATE)
-                    ?: stringResource(R.string.mylist_date_not_set),
+                    ?: stringResource(R.string.entry_date_not_set),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -300,11 +300,11 @@ private fun DateRow(
         Row {
             if (date != null) {
                 TextButton(onClick = onClear) {
-                    Text(stringResource(R.string.mylist_date_clear))
+                    Text(stringResource(R.string.entry_date_clear))
                 }
             }
             TextButton(onClick = onPick) {
-                Text(stringResource(R.string.mylist_date_pick))
+                Text(stringResource(R.string.entry_date_pick))
             }
         }
     }
@@ -335,12 +335,12 @@ private fun EntryDatePickerDialog(
                     }
                 },
             ) {
-                Text(stringResource(com.myanitrack.core.ui.R.string.action_save))
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(com.myanitrack.core.ui.R.string.action_cancel))
+                Text(stringResource(R.string.action_cancel))
             }
         },
     ) {

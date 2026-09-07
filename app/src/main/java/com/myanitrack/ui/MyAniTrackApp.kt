@@ -28,9 +28,13 @@ fun MyAniTrackApp(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
 
+    // Detay gibi tam ekran hedeflerde alt cubuk gizlenir.
+    val showBottomBar = TopLevelDestination.entries.any { currentDestination.isTopLevel(it) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         bottomBar = {
+            if (!showBottomBar) return@Scaffold
             NavigationBar {
                 TopLevelDestination.entries.forEach { destination ->
                     val selected = currentDestination.isTopLevel(destination)

@@ -18,4 +18,31 @@
     <string name="action_save">Kaydet</string>
     <string name="action_delete">Sil</string>
     <string name="action_refresh">Yenile</string>
+
+    <!-- Liste kaydi duzenleme sayfasi ve durum etiketleri (birden fazla feature kullaniyor) -->
+    <string name="status_watching">Izleniyor</string>
+    <string name="status_reading">Okunuyor</string>
+    <string name="status_completed">Tamamlandi</string>
+    <string name="status_on_hold">Beklemede</string>
+    <string name="status_dropped">Birakildi</string>
+    <string name="status_plan_to_watch">Izlenecek</string>
+    <string name="status_plan_to_read">Okunacak</string>
+    <string name="status_all">Tumu</string>
+    <string name="entry_field_status">Durum</string>
+    <string name="entry_field_score">Puan</string>
+    <string name="entry_field_episodes">Izlenen bolum</string>
+    <string name="entry_field_chapters">Okunan bolum</string>
+    <string name="entry_field_volumes">Okunan cilt</string>
+    <string name="entry_field_rewatching">Tekrar izleniyor</string>
+    <string name="entry_field_rereading">Tekrar okunuyor</string>
+    <string name="entry_field_times_rewatched">Tekrar izleme sayisi</string>
+    <string name="entry_field_times_reread">Tekrar okuma sayisi</string>
+    <string name="entry_field_start_date">Baslangic tarihi</string>
+    <string name="entry_field_finish_date">Bitis tarihi</string>
+    <string name="entry_field_tags">Etiketler</string>
+    <string name="entry_field_tags_hint">Etiketleri virgulle ayirin</string>
+    <string name="entry_field_comments">Notlar</string>
+    <string name="entry_date_not_set">Belirtilmedi</string>
+    <string name="entry_date_pick">Sec</string>
+    <string name="entry_date_clear">Temizle</string>
 </resources>

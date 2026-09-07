@@ -1,6 +1,7 @@
 package com.myanitrack.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
@@ -14,6 +15,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.myanitrack.R
+import com.myanitrack.core.model.MediaType
+import com.myanitrack.feature.browse.BrowseRoute
+import com.myanitrack.feature.details.navigation.mediaDetailsScreen
+import com.myanitrack.feature.details.navigation.navigateToMediaDetails
 import com.myanitrack.feature.mylist.MyListRoute
 import com.myanitrack.feature.settings.SettingsRoute
 import kotlin.reflect.KClass
@@ -22,11 +27,15 @@ import kotlinx.serialization.Serializable
 /**
  * Type-safe Navigation-Compose rotalari.
  *
- * Sonraki fazlarda eklenecek ekranlar (detay, kesfet, takvim, haberler, profil)
- * buraya kendi @Serializable rotalarini ekleyecek.
+ * Detay rotasi :feature:details icinde tanimli (bkz. `mediaDetailsScreen`);
+ * boylece :app modulu ile feature modulleri arasinda dongusel bagimlilik olusmuyor.
+ * Sonraki fazlarda eklenecek ekranlar (takvim, haberler, profil) ayni deseni izleyecek.
  */
 @Serializable
 data object MyListDestination
+
+@Serializable
+data object BrowseDestination
 
 @Serializable
 data object SettingsDestination
@@ -38,6 +47,7 @@ enum class TopLevelDestination(
     val labelRes: Int,
 ) {
     MY_LIST(MyListDestination::class, Icons.Outlined.VideoLibrary, R.string.nav_my_list),
+    BROWSE(BrowseDestination::class, Icons.Outlined.Explore, R.string.nav_browse),
     SETTINGS(SettingsDestination::class, Icons.Outlined.Settings, R.string.nav_settings),
 }
 
@@ -59,6 +69,7 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
     }
     when (destination) {
         TopLevelDestination.MY_LIST -> navigate(MyListDestination, options)
+        TopLevelDestination.BROWSE -> navigate(BrowseDestination, options)
         TopLevelDestination.SETTINGS -> navigate(SettingsDestination, options)
     }
 }
@@ -68,16 +79,25 @@ fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
+    val openMedia: (MediaType, Int) -> Unit = { mediaType, malId ->
+        navController.navigateToMediaDetails(mediaType, malId)
+    }
+
     NavHost(
         navController = navController,
         startDestination = MyListDestination,
         modifier = modifier,
     ) {
-        mainGraph()
+        mainGraph(onBack = navController::popBackStack, onOpenMedia = openMedia)
     }
 }
 
-private fun NavGraphBuilder.mainGraph() {
-    composable<MyListDestination> { MyListRoute() }
+private fun NavGraphBuilder.mainGraph(
+    onBack: () -> Unit,
+    onOpenMedia: (MediaType, Int) -> Unit,
+) {
+    composable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia) }
+    composable<BrowseDestination> { BrowseRoute(onOpenMedia = onOpenMedia) }
     composable<SettingsDestination> { SettingsRoute() }
+    mediaDetailsScreen(onBack = onBack, onOpenMedia = onOpenMedia)
 }

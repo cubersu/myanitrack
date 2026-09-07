@@ -1,0 +1,278 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "8cd132fed6307c372a01cae52a77d73f",
+    "entities": [
+      {
+        "tableName": "media_list_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`mediaType` TEXT NOT NULL, `malId` INTEGER NOT NULL, `title` TEXT NOT NULL, `englishTitle` TEXT, `japaneseTitle` TEXT, `pictureMedium` TEXT, `pictureLarge` TEXT, `subType` TEXT NOT NULL, `airingStatus` TEXT NOT NULL, `meanScore` REAL, `rank` INTEGER, `popularity` INTEGER, `numEpisodes` INTEGER, `numChapters` INTEGER, `numVolumes` INTEGER, `startDate` INTEGER, `endDate` INTEGER, `synopsis` TEXT, `genres` TEXT NOT NULL, `studios` TEXT NOT NULL, `nsfw` INTEGER NOT NULL, `listStatus` TEXT NOT NULL, `score` INTEGER NOT NULL, `numEpisodesWatched` INTEGER NOT NULL, `numChaptersRead` INTEGER NOT NULL, `numVolumesRead` INTEGER NOT NULL, `isRepeating` INTEGER NOT NULL, `numTimesRepeated` INTEGER NOT NULL, `repeatValue` INTEGER NOT NULL, `priority` INTEGER NOT NULL, `userStartDate` INTEGER, `userFinishDate` INTEGER, `tags` TEXT NOT NULL, `comments` TEXT NOT NULL, `updatedAt` INTEGER, `pendingSync` INTEGER NOT NULL, PRIMARY KEY(`mediaType`, `malId`))",
+        "fields": [
+          {
+            "fieldPath": "mediaType",
+            "columnName": "mediaType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "malId",
+            "columnName": "malId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "englishTitle",
+            "columnName": "englishTitle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "japaneseTitle",
+            "columnName": "japaneseTitle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pictureMedium",
+            "columnName": "pictureMedium",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pictureLarge",
+            "columnName": "pictureLarge",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "subType",
+            "columnName": "subType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "airingStatus",
+            "columnName": "airingStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "meanScore",
+            "columnName": "meanScore",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "rank",
+            "columnName": "rank",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "popularity",
+            "columnName": "popularity",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numEpisodes",
+            "columnName": "numEpisodes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numChapters",
+            "columnName": "numChapters",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numVolumes",
+            "columnName": "numVolumes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "synopsis",
+            "columnName": "synopsis",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "genres",
+            "columnName": "genres",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "studios",
+            "columnName": "studios",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nsfw",
+            "columnName": "nsfw",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listStatus",
+            "columnName": "listStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "score",
+            "columnName": "score",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numEpisodesWatched",
+            "columnName": "numEpisodesWatched",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numChaptersRead",
+            "columnName": "numChaptersRead",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numVolumesRead",
+            "columnName": "numVolumesRead",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isRepeating",
+            "columnName": "isRepeating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numTimesRepeated",
+            "columnName": "numTimesRepeated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "repeatValue",
+            "columnName": "repeatValue",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userStartDate",
+            "columnName": "userStartDate",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "userFinishDate",
+            "columnName": "userFinishDate",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "comments",
+            "columnName": "comments",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "pendingSync",
+            "columnName": "pendingSync",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "mediaType",
+            "malId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_media_list_entries_mediaType_listStatus",
+            "unique": false,
+            "columnNames": [
+              "mediaType",
+              "listStatus"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_media_list_entries_mediaType_listStatus` ON `${TABLE_NAME}` (`mediaType`, `listStatus`)"
+          },
+          {
+            "name": "index_media_list_entries_mediaType_title",
+            "unique": false,
+            "columnNames": [
+              "mediaType",
+              "title"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_media_list_entries_mediaType_title` ON `${TABLE_NAME}` (`mediaType`, `title`)"
+          }
+        ]
+      },
+      {
+        "tableName": "remote_cache",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cacheKey` TEXT NOT NULL, `payload` TEXT NOT NULL, `fetchedAtEpochSeconds` INTEGER NOT NULL, PRIMARY KEY(`cacheKey`))",
+        "fields": [
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cacheKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fetchedAtEpochSeconds",
+            "columnName": "fetchedAtEpochSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cacheKey"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8cd132fed6307c372a01cae52a77d73f')"
+    ]
+  }
+}

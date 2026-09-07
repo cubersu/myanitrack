@@ -3,6 +3,9 @@ package com.myanitrack.core.network.di
 import com.myanitrack.core.network.BuildConfig
 import com.myanitrack.core.network.auth.MalAuthInterceptor
 import com.myanitrack.core.network.auth.MalAuthenticator
+import com.myanitrack.core.network.jikan.JikanApiService
+import com.myanitrack.core.network.jikan.JikanRateLimitInterceptor
+import com.myanitrack.core.network.jikan.JikanRetryInterceptor
 import com.myanitrack.core.network.mal.MalApiService
 import com.myanitrack.core.network.mal.MalOAuthService
 import dagger.Module
@@ -23,6 +26,11 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)
 annotation class UnauthenticatedClient
+
+/** Jikan v4 icin hiz sinirlayici + yeniden deneyici iceren istemci. */
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
+annotation class JikanClient
 
 /** MAL API v2 icin token ekleyen istemci. */
 @Qualifier
@@ -94,6 +102,50 @@ object NetworkModule {
         .addConverterFactory(json.asConverterFactory(JSON_MEDIA_TYPE.toMediaType()))
         .build()
         .create(MalOAuthService::class.java)
+
+    @Provides
+    @Singleton
+    fun providesJikanRateLimitInterceptor(): JikanRateLimitInterceptor =
+        JikanRateLimitInterceptor(
+            clock = System::currentTimeMillis,
+            sleeper = { millis -> Thread.sleep(millis) },
+        )
+
+    @Provides
+    @Singleton
+    fun providesJikanRetryInterceptor(): JikanRetryInterceptor =
+        JikanRetryInterceptor(sleeper = { millis -> Thread.sleep(millis) })
+
+    /**
+     * Jikan istemcisi: once yeniden deneme, sonra hiz siniri.
+     *
+     * Sira onemli - yeniden deneme interceptor-i disarida oldugu icin her deneme
+     * hiz sinirlayicidan yeniden gecer; boylece backoff sirasinda bile 3/sn ve
+     * 60/dk pencereleri asilmaz.
+     */
+    @Provides
+    @Singleton
+    @JikanClient
+    fun providesJikanOkHttpClient(
+        @UnauthenticatedClient baseClient: OkHttpClient,
+        retryInterceptor: JikanRetryInterceptor,
+        rateLimitInterceptor: JikanRateLimitInterceptor,
+    ): OkHttpClient = baseClient.newBuilder()
+        .addInterceptor(retryInterceptor)
+        .addInterceptor(rateLimitInterceptor)
+        .build()
+
+    @Provides
+    @Singleton
+    fun providesJikanApiService(
+        @JikanClient client: OkHttpClient,
+        json: Json,
+    ): JikanApiService = Retrofit.Builder()
+        .baseUrl(BuildConfig.JIKAN_BASE_URL)
+        .client(client)
+        .addConverterFactory(json.asConverterFactory(JSON_MEDIA_TYPE.toMediaType()))
+        .build()
+        .create(JikanApiService::class.java)
 
     private const val CONNECT_TIMEOUT_SECONDS = 20L
     private const val READ_TIMEOUT_SECONDS = 30L

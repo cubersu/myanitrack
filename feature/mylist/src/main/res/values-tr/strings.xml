@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="status_watching">Izleniyor</string>
-    <string name="status_reading">Okunuyor</string>
-    <string name="status_completed">Tamamlandi</string>
-    <string name="status_on_hold">Beklemede</string>
-    <string name="status_dropped">Birakildi</string>
-    <string name="status_plan_to_watch">Izlenecek</string>
-    <string name="status_plan_to_read">Okunacak</string>
-    <string name="status_all">Tumu</string>
 
     <string name="view_mode_grid">Izgara</string>
     <string name="view_mode_compact">Kompakt</string>
@@ -30,21 +22,4 @@
     <string name="mylist_empty_description">Bu duruma ya da filtreye uyan kayit yok. MyAnimeList ile esitlemek icin asagi cekin.</string>
     <string name="mylist_entry_deleted">%1$s listenizden kaldirildi</string>
 
-    <string name="mylist_field_status">Durum</string>
-    <string name="mylist_field_score">Puan</string>
-    <string name="mylist_field_episodes">Izlenen bolum</string>
-    <string name="mylist_field_chapters">Okunan bolum</string>
-    <string name="mylist_field_volumes">Okunan cilt</string>
-    <string name="mylist_field_rewatching">Tekrar izleniyor</string>
-    <string name="mylist_field_rereading">Tekrar okunuyor</string>
-    <string name="mylist_field_times_rewatched">Tekrar izleme sayisi</string>
-    <string name="mylist_field_times_reread">Tekrar okuma sayisi</string>
-    <string name="mylist_field_start_date">Baslangic tarihi</string>
-    <string name="mylist_field_finish_date">Bitis tarihi</string>
-    <string name="mylist_field_tags">Etiketler</string>
-    <string name="mylist_field_tags_hint">Etiketleri virgulle ayirin</string>
-    <string name="mylist_field_comments">Notlar</string>
-    <string name="mylist_date_not_set">Belirtilmedi</string>
-    <string name="mylist_date_pick">Sec</string>
-    <string name="mylist_date_clear">Temizle</string>
 </resources>
