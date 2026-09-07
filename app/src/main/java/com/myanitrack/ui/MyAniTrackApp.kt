@@ -11,9 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.myanitrack.core.common.deeplink.DeepLinkTarget
+import com.myanitrack.core.model.MediaType
+import com.myanitrack.core.ui.ObserveAsEvents
+import com.myanitrack.feature.details.navigation.navigateToMediaDetails
 import com.myanitrack.navigation.AppNavHost
 import com.myanitrack.navigation.TopLevelDestination
 import com.myanitrack.navigation.isTopLevel
@@ -24,9 +29,23 @@ import com.myanitrack.navigation.navigateToTopLevel
 fun MyAniTrackApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
+    viewModel: DeepLinkViewModel = hiltViewModel(),
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+
+    // Bildirime ya da disaridan gelen baglantiya dokunuldugunda ilgili ekrani ac.
+    ObserveAsEvents(viewModel.deepLinks) { target ->
+        when (target) {
+            is DeepLinkTarget.Media -> {
+                val mediaType = MediaType.entries
+                    .firstOrNull { it.name == target.mediaTypeName }
+                    ?: MediaType.ANIME
+                navController.navigateToMediaDetails(mediaType, target.malId)
+            }
+        }
+        viewModel.onDeepLinkHandled()
+    }
 
     // Detay gibi tam ekran hedeflerde alt cubuk gizlenir.
     val showBottomBar = TopLevelDestination.entries.any { currentDestination.isTopLevel(it) }

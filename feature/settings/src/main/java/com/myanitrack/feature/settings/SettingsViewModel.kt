@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.myanitrack.core.domain.repository.AuthRepository
 import com.myanitrack.core.domain.repository.UserPreferencesRepository
+import com.myanitrack.core.domain.schedule.AiringSyncScheduler
 import com.myanitrack.core.model.AuthState
 import com.myanitrack.core.model.ListViewMode
 import com.myanitrack.core.model.MediaType
@@ -26,6 +27,7 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val preferencesRepository: UserPreferencesRepository,
     private val authRepository: AuthRepository,
+    private val airingSyncScheduler: AiringSyncScheduler,
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = combine(
@@ -55,8 +57,25 @@ class SettingsViewModel @Inject constructor(
 
     fun setHideNsfw(hide: Boolean) = launchPref { preferencesRepository.setHideNsfw(hide) }
 
-    fun setAiringNotifications(enabled: Boolean) =
-        launchPref { preferencesRepository.setAiringNotifications(enabled) }
+    /**
+     * Bildirim tercihi degisince arka plan isi de guncellenmeli; aksi halde
+     * kullanici kapatsa bile periyodik senkronizasyon calismaya devam ederdi.
+     */
+    fun setAiringNotifications(enabled: Boolean) = launchPref {
+        preferencesRepository.setAiringNotifications(enabled)
+        airingSyncScheduler.applyPreferences(
+            notificationsEnabled = enabled,
+            onlyOnWifi = uiState.value.preferences.syncOnlyOnWifi,
+        )
+    }
+
+    fun setSyncOnlyOnWifi(enabled: Boolean) = launchPref {
+        preferencesRepository.setSyncOnlyOnWifi(enabled)
+        airingSyncScheduler.applyPreferences(
+            notificationsEnabled = uiState.value.preferences.airingNotificationsEnabled,
+            onlyOnWifi = enabled,
+        )
+    }
 
     /** Cikis: token silinir, sifreleme anahtari yok edilir. */
     fun logout() {

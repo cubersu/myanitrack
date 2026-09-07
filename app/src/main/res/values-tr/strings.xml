@@ -2,5 +2,13 @@
 <resources>
     <string name="nav_my_list">Listem</string>
     <string name="nav_browse">Kesfet</string>
+    <string name="nav_calendar">Takvim</string>
+    <string name="nav_news">Haberler</string>
     <string name="nav_settings">Ayarlar</string>
+
+    <string name="notification_channel_airing">Yayin hatirlatmalari</string>
+    <string name="notification_channel_airing_description">Yeni bolum yayinlanmadan once haber verir</string>
+    <string name="notification_airing_now">Yeni bolum su an yayinda</string>
+    <string name="notification_airing_in_minutes">Yeni bolume %1$d dakika</string>
+    <string name="notification_airing_in_hours">Yeni bolume %1$d saat</string>
 </resources>

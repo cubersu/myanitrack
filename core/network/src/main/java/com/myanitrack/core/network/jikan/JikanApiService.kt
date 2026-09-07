@@ -71,6 +71,19 @@ interface JikanApiService {
     @GET("anime/{id}/videos")
     suspend fun getAnimeVideos(@Path("id") id: Int): JikanResponse<JikanVideosDto>
 
+    /**
+     * Haftalik yayin takvimi. `filter` gun adi ("monday" ... "sunday").
+     * Yanit, `broadcast` alani dolu anime kayitlaridir.
+     */
+    @GET("schedules")
+    suspend fun getSchedule(
+        @Query("filter") day: String,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = PAGE_SIZE,
+        @Query("sfw") safeForWork: Boolean = true,
+        @Query("kids") kids: Boolean = false,
+    ): JikanPagedResponse<JikanMediaDto>
+
     // --- Kesfet ---
 
     @GET("top/anime")

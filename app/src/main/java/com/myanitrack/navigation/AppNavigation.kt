@@ -1,7 +1,9 @@
 package com.myanitrack.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
@@ -17,9 +19,11 @@ import androidx.navigation.navOptions
 import com.myanitrack.R
 import com.myanitrack.core.model.MediaType
 import com.myanitrack.feature.browse.BrowseRoute
+import com.myanitrack.feature.calendar.CalendarRoute
 import com.myanitrack.feature.details.navigation.mediaDetailsScreen
 import com.myanitrack.feature.details.navigation.navigateToMediaDetails
 import com.myanitrack.feature.mylist.MyListRoute
+import com.myanitrack.feature.news.NewsRoute
 import com.myanitrack.feature.settings.SettingsRoute
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
@@ -38,6 +42,12 @@ data object MyListDestination
 data object BrowseDestination
 
 @Serializable
+data object CalendarDestination
+
+@Serializable
+data object NewsDestination
+
+@Serializable
 data object SettingsDestination
 
 /** Alt gezinme cubugundaki sekmeler. */
@@ -48,6 +58,8 @@ enum class TopLevelDestination(
 ) {
     MY_LIST(MyListDestination::class, Icons.Outlined.VideoLibrary, R.string.nav_my_list),
     BROWSE(BrowseDestination::class, Icons.Outlined.Explore, R.string.nav_browse),
+    CALENDAR(CalendarDestination::class, Icons.Outlined.CalendarMonth, R.string.nav_calendar),
+    NEWS(NewsDestination::class, Icons.Outlined.Newspaper, R.string.nav_news),
     SETTINGS(SettingsDestination::class, Icons.Outlined.Settings, R.string.nav_settings),
 }
 
@@ -70,6 +82,8 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
     when (destination) {
         TopLevelDestination.MY_LIST -> navigate(MyListDestination, options)
         TopLevelDestination.BROWSE -> navigate(BrowseDestination, options)
+        TopLevelDestination.CALENDAR -> navigate(CalendarDestination, options)
+        TopLevelDestination.NEWS -> navigate(NewsDestination, options)
         TopLevelDestination.SETTINGS -> navigate(SettingsDestination, options)
     }
 }
@@ -98,6 +112,8 @@ private fun NavGraphBuilder.mainGraph(
 ) {
     composable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia) }
     composable<BrowseDestination> { BrowseRoute(onOpenMedia = onOpenMedia) }
+    composable<CalendarDestination> { CalendarRoute(onOpenMedia = onOpenMedia) }
+    composable<NewsDestination> { NewsRoute() }
     composable<SettingsDestination> { SettingsRoute() }
     mediaDetailsScreen(onBack = onBack, onOpenMedia = onOpenMedia)
 }

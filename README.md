@@ -16,8 +16,8 @@ mümkün olan her yerde **resmî ve stabil API'leri** kullanır; scraping gerekt
 |-----|--------|-------|
 | 1 | Proje iskeleti, MAL OAuth2 girişi, liste CRUD, liste görünümleri | ✅ Tamamlandı |
 | 2 | Jikan entegrasyonu, detay sayfası, arama, top/sezonluk listeler | ✅ Tamamlandı |
-| 3 | Yayın takvimi + geri sayım bildirimleri, haberler | ⬜ Sırada |
-| 4 | Profil sayfaları, RSS arkadaş akışı, geçmiş | ⬜ |
+| 3 | Yayın takvimi + geri sayım bildirimleri, haberler | ✅ Tamamlandı |
+| 4 | Profil sayfaları, RSS arkadaş akışı, geçmiş | ⬜ Sırada |
 | 5 | Forum ve mesajlaşma (WebView — Seçenek A) | ⬜ |
 | 6 | Ayarlar cilası, deep link, animasyonlar, offline mod | ⬜ |
 
@@ -67,7 +67,7 @@ gerektiğini açıkça söyler.
 | Tercihler | DataStore (Preferences + Keystore ile şifreli token deposu) |
 | Görsel | Coil 3 |
 | Navigasyon | Navigation-Compose (type-safe routes) |
-| Arka plan | WorkManager (Faz 3'ten itibaren) |
+| Arka plan | WorkManager (yayın senkronizasyonu + bildirimler) |
 | Test | JUnit 5 + MockK + Turbine |
 | Build | AGP 9.2.1 (built-in Kotlin), Gradle 9.4.1, JDK 21, minSdk 26 / targetSdk 37 |
 
@@ -111,7 +111,7 @@ gerektiğini açıkça söyler.
 |--------|---------|--------|
 | **MAL API v2** (OAuth2 + PKCE) | Giriş, liste CRUD, profil temel bilgileri, arama | ✅ Tüm yazma işlemleri **yalnızca** buradan |
 | **Jikan v4** (Faz 2) | Top/sezonluk listeler, karakter & staff, review, öneri, haber, takvim | ❌ Salt okunur |
-| **MAL RSS** (Faz 4) | Arkadaş akışı / liste güncellemeleri | ❌ Salt okunur |
+| **MAL RSS** (resmî) | Haber akışı (Faz 3), arkadaş akışı (Faz 4) | ❌ Salt okunur |
 | **WebView** (Faz 5) | Forum ve özel mesajlar — MAL'ın API'si yok | Kullanıcı sitede |
 
 Forum/mesajlaşma için **Seçenek A (WebView)** seçildi: MAL'ın HTML yapısı değişse
@@ -202,18 +202,57 @@ aynı repository arayüzünün arkasında denenebilir.
 
 ---
 
+## Faz 3'te neler var
+
+**Yayın takvimi**
+- Haftalık takvim, gün sekmeleri; bugünün günü seçili açılır
+- Her satırda **canlı geri sayım** (dakikada bir tazelenir) ve yayın saati
+  kullanıcının kendi saat diliminde
+- "Listem" filtresi — yalnızca izlemekte olduğun yapımlar
+- Yayın saati bilinmeyen kayıtlar listenin sonuna düşer, gizlenmez
+- Bir gün alınamazsa o gün boş kalır, takvimin geri kalanı görünür
+
+**Sonraki bölüm hesabı** (`NextEpisodeCalculator`, saf fonksiyon)
+- MAL yayın saatini yayıncı diliminde (genelde Asia/Tokyo) verir; hesap önce o
+  dilimde yapılıp `Instant`'a çevrilir — yaz saati geçişleri ve tarih sınırı doğru
+- Yayın anı tam şimdiyse bir sonraki haftaya geçer; geri sayım sıfırda takılmaz
+- Eksik yayın bilgisi (MAL sık sık boş bırakıyor) çökme değil, "bilinmiyor" demek
+
+**Bildirimler** (push sunucusu yok, tamamen cihaz içi)
+- `AiringSyncWorker` 6 saatte bir çalışır: izlediğin yapımların takvimini alır,
+  sonraki 6 saatte yayınlanacakları bulur, her biri için yayından **30 dk önce**
+  tetiklenecek tek seferlik bir iş kuyruğa alır
+- `AiringNotificationWorker` bildirimi gösterir; çalıştığı anda tercihi yeniden
+  kontrol eder ve çok gecikmiş bildirimleri (cihaz kapalıydı vb.) atlar
+- **Neden AlarmManager değil:** tam zamanlı alarm Android 12+ ayrı izin ister ve pil
+  kısıtlarına takılır. WorkManager birkaç dakika sapma pahasına izinsiz ve sistem dostu.
+- Bildirime dokunmak ilgili detay sayfasını açar (`myanitrack://anime/<id>`)
+- Android 13+ bildirim izni çalışma zamanında isteniyor; reddedilirse uygulama
+  normal çalışır, yalnızca hatırlatma gösterilmez
+- Ayarlardan bildirimleri kapatmak arka plan işini de iptal eder
+
+**Haberler**
+- Kaynak: MAL'ın **resmî haber RSS'i** (`rss.php?type=news`). Jikan'ın yalnızca
+  yapım bazlı haber ucu var (`/anime/{id}/news`), genel akış yok — resmî RSS hem
+  doğru kaynak hem de hız sınırına takılmıyor.
+- Bağımlılıksız RSS ayrıştırıcı (`javax.xml.parsers`) — hem Android hem düz JVM'de
+  çalıştığı için Robolectric olmadan test edilebiliyor
+- Bozuk XML ya da çözülemeyen tarih akışı bozmaz; makale MAL sitesinde açılır
+
+---
+
 ## Bilinen sınırlar
 
-- **Alt gezinme çubuğunda 3 sekme var** (Listem, Keşfet, Ayarlar). Takvim/Haberler/Profil
-  sekmeleri ilgili fazlarda eklenecek.
 - **Stüdyo bazlı gezinme henüz yok.** Jikan `producers` parametresi servis katmanında
   hazır ama Keşfet ekranında yalnızca tür filtresi açık.
 - **Çevrimdışı düzenleme kuyruğu yok.** Ağ yokken yapılan değişiklik geri alınır ve
   hata gösterilir. `pendingSync` alanı ve DAO sorgusu bu iş için hazır bekliyor (Faz 6).
-- **Deep link kısmen hazır.** `myanitrack://` şeması kayıtlı ve OAuth dönüşü çalışıyor;
-  `myanitrack://anime/<id>` gibi içerik bağlantıları Faz 6'da bağlanacak.
-- **Bildirim izni manifest'te tanımlı** ama çalışma zamanı isteği Faz 3'te eklenecek.
+- **Geri sayım MAL'ın yayın bilgisine güvenir.** MAL bir yapımın `broadcast` alanını
+  boş bırakırsa geri sayım gösterilemez — uydurma tahmin yapılmıyor.
+- **Bildirim zamanlaması ±birkaç dakika sapabilir** (WorkManager'ın doğası). Tam
+  zamanlı alarm bilinçli olarak tercih edilmedi.
 - **Manga incelemeleri Jikan'da anime kadar zengin değil**; bazı başlıklarda boş gelebilir.
+- **Profil, forum ve mesajlaşma sekmeleri henüz yok** (Faz 4–5).
 
 ---
 

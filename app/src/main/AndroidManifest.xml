@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -41,5 +42,22 @@
                 <data android:scheme="myanitrack" />
             </intent-filter>
         </activity>
+
+        <!--
+          WorkManager varsayilan olarak androidx.startup ile kendini baslatir.
+          Application sinifi Configuration.Provider uyguladigi (ve Hilt worker
+          fabrikasini verdigi) icin varsayilan baslatici kapatilmali; aksi halde
+          @HiltWorker isaretli worker-lar olusturulamaz.
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
     </application>
 </manifest>

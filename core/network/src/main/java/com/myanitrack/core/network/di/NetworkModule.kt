@@ -8,6 +8,7 @@ import com.myanitrack.core.network.jikan.JikanRateLimitInterceptor
 import com.myanitrack.core.network.jikan.JikanRetryInterceptor
 import com.myanitrack.core.network.mal.MalApiService
 import com.myanitrack.core.network.mal.MalOAuthService
+import com.myanitrack.core.network.rss.MalRssService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,6 +22,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 /** Kimlik dogrulama gerektirmeyen (OAuth token alisverisi) istemci. */
 @Qualifier
@@ -146,6 +148,21 @@ object NetworkModule {
         .addConverterFactory(json.asConverterFactory(JSON_MEDIA_TYPE.toMediaType()))
         .build()
         .create(JikanApiService::class.java)
+
+    /**
+     * MAL RSS istemcisi. Govde XML oldugu icin scalars donusturucusu kullaniliyor;
+     * kimlik dogrulama gerektirmez, hiz siniri yoktur.
+     */
+    @Provides
+    @Singleton
+    fun providesMalRssService(
+        @UnauthenticatedClient client: OkHttpClient,
+    ): MalRssService = Retrofit.Builder()
+        .baseUrl(BuildConfig.MAL_WEB_BASE_URL)
+        .client(client)
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .build()
+        .create(MalRssService::class.java)
 
     private const val CONNECT_TIMEOUT_SECONDS = 20L
     private const val READ_TIMEOUT_SECONDS = 30L

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="calendar_title">Calendar</string>
+    <string name="calendar_only_my_list">My list</string>
+    <string name="calendar_in_my_list">In your list</string>
+    <string name="calendar_time_unknown">Air time unknown</string>
+    <string name="calendar_airing_now">Airing</string>
+    <string name="calendar_in_days">in %1$d d</string>
+    <string name="calendar_in_hours">in %1$d h</string>
+    <string name="calendar_in_minutes">in %1$d m</string>
+    <string name="calendar_empty_title">Nothing airing</string>
+    <string name="calendar_empty_my_list_title">Nothing from your list today</string>
+    <string name="calendar_empty_description">Pull down to load the weekly schedule.</string>
+</resources>

@@ -1,20 +1,30 @@
 package com.myanitrack
 
+import android.Manifest
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myanitrack.core.common.auth.AuthRedirectBus
+import com.myanitrack.core.common.deeplink.DeepLinkBus
+import com.myanitrack.core.common.deeplink.DeepLinkTarget
 import com.myanitrack.core.designsystem.theme.MyAniTrackTheme
 import com.myanitrack.core.model.AuthState
+import com.myanitrack.core.model.MediaType
 import com.myanitrack.core.model.ThemeMode
 import com.myanitrack.feature.auth.LoginRoute
+import com.myanitrack.notification.AiringNotifier
 import com.myanitrack.ui.MyAniTrackApp
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -27,6 +37,12 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var authRedirectBus: AuthRedirectBus
 
+    @Inject
+    lateinit var deepLinkBus: DeepLinkBus
+
+    @Inject
+    lateinit var airingNotifier: AiringNotifier
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -37,7 +53,7 @@ class MainActivity : ComponentActivity() {
         var uiState: MainUiState = MainUiState()
         splashScreen.setKeepOnScreenCondition { !uiState.isReady }
 
-        handleAuthRedirect(intent)
+        handleIntent(intent)
 
         setContent {
             val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -52,8 +68,15 @@ class MainActivity : ComponentActivity() {
             MyAniTrackTheme(darkTheme = darkTheme, useDynamicColor = state.useDynamicColor) {
                 when (state.authState) {
                     AuthState.Loading -> Unit // Acilis ekrani gosteriliyor.
-                    AuthState.LoggedOut -> LoginRoute(onLoggedIn = { /* authState akisi ekrani degistirir */ })
-                    is AuthState.LoggedIn -> MyAniTrackApp()
+
+                    AuthState.LoggedOut ->
+                        // Giris tamamlaninca authState akisi ekrani kendiliginden degistirir.
+                        LoginRoute(onLoggedIn = {})
+
+                    is AuthState.LoggedIn -> {
+                        NotificationPermissionRequest()
+                        MyAniTrackApp()
+                    }
                 }
             }
         }
@@ -62,23 +85,55 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleAuthRedirect(intent)
+        handleIntent(intent)
     }
 
     /**
-     * Tarayicidan donen `myanitrack://auth?code=...` adresini giris ekranina iletir.
-     * Ileride eklenecek `myanitrack://anime/<id>` gibi derin baglantilar da burada
-     * ayristirilacak.
+     * Android 13+ bildirim izni. Kullanici reddederse uygulama normal calismaya
+     * devam eder; yalnizca yayin hatirlatmalari gosterilmez.
      */
-    private fun handleAuthRedirect(intent: Intent?) {
-        val data = intent?.data ?: return
-        if (data.scheme == AUTH_SCHEME && data.host == AUTH_HOST) {
-            authRedirectBus.publish(data.toString())
+    @androidx.compose.runtime.Composable
+    private fun NotificationPermissionRequest() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        val launcher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { /* Sonuc onemli degil: izin yoksa bildirim atlanir. */ }
+
+        LaunchedEffect(Unit) {
+            if (!airingNotifier.canPostNotifications()) {
+                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
+    /**
+     * `myanitrack://` semasindaki baglantilari ayristirir.
+     *
+     * - `myanitrack://auth?code=...` - OAuth donusu (giris ekranina)
+     * - `myanitrack://anime/<id>`, `myanitrack://manga/<id>` - detay sayfasi
+     *   (yayin bildirimlerine dokunuldugunda kullanilir)
+     */
+    private fun handleIntent(intent: Intent?) {
+        val data = intent?.data ?: return
+        if (data.scheme != APP_SCHEME) return
+
+        when (data.host) {
+            AUTH_HOST -> authRedirectBus.publish(data.toString())
+            HOST_ANIME -> data.publishMedia(MediaType.ANIME)
+            HOST_MANGA -> data.publishMedia(MediaType.MANGA)
+        }
+    }
+
+    private fun Uri.publishMedia(mediaType: MediaType) {
+        val malId = pathSegments.firstOrNull()?.toIntOrNull() ?: return
+        deepLinkBus.publish(DeepLinkTarget.Media(mediaType.name, malId))
+    }
+
     private companion object {
-        const val AUTH_SCHEME = "myanitrack"
+        const val APP_SCHEME = "myanitrack"
         const val AUTH_HOST = "auth"
+        const val HOST_ANIME = "anime"
+        const val HOST_MANGA = "manga"
     }
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="news_title">Haberler</string>
+    <string name="news_empty_title">Su an haber yok</string>
+    <string name="news_empty_description">En son MyAnimeList haberlerini yuklemek icin asagi cekin.</string>
+</resources>

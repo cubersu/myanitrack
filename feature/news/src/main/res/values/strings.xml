@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="news_title">News</string>
+    <string name="news_empty_title">No news right now</string>
+    <string name="news_empty_description">Pull down to load the latest MyAnimeList news.</string>
+</resources>

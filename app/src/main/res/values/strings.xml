@@ -3,5 +3,13 @@
     <string name="app_name">MyAniTrack</string>
     <string name="nav_my_list">My List</string>
     <string name="nav_browse">Browse</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_news">News</string>
     <string name="nav_settings">Settings</string>
+
+    <string name="notification_channel_airing">Airing reminders</string>
+    <string name="notification_channel_airing_description">Reminds you before a new episode airs</string>
+    <string name="notification_airing_now">A new episode is airing now</string>
+    <string name="notification_airing_in_minutes">New episode in %1$d minutes</string>
+    <string name="notification_airing_in_hours">New episode in %1$d hours</string>
 </resources>

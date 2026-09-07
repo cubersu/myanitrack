@@ -4,12 +4,16 @@ import com.myanitrack.core.data.auth.AuthRepositoryImpl
 import com.myanitrack.core.data.details.MediaDetailsRepositoryImpl
 import com.myanitrack.core.data.discover.DiscoverRepositoryImpl
 import com.myanitrack.core.data.list.MediaListRepositoryImpl
+import com.myanitrack.core.data.news.NewsRepositoryImpl
 import com.myanitrack.core.data.prefs.UserPreferencesRepositoryImpl
+import com.myanitrack.core.data.schedule.ScheduleRepositoryImpl
 import com.myanitrack.core.data.user.UserRepositoryImpl
 import com.myanitrack.core.domain.repository.AuthRepository
 import com.myanitrack.core.domain.repository.DiscoverRepository
 import com.myanitrack.core.domain.repository.MediaDetailsRepository
 import com.myanitrack.core.domain.repository.MediaListRepository
+import com.myanitrack.core.domain.repository.NewsRepository
+import com.myanitrack.core.domain.repository.ScheduleRepository
 import com.myanitrack.core.domain.repository.UserPreferencesRepository
 import com.myanitrack.core.domain.repository.UserRepository
 import dagger.Binds
@@ -39,6 +43,14 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindsDiscoverRepository(impl: DiscoverRepositoryImpl): DiscoverRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindsScheduleRepository(impl: ScheduleRepositoryImpl): ScheduleRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindsNewsRepository(impl: NewsRepositoryImpl): NewsRepository
 
     @Binds
     @Singleton
