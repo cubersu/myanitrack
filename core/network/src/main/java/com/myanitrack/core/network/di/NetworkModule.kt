@@ -4,6 +4,7 @@ import com.myanitrack.core.network.BuildConfig
 import com.myanitrack.core.network.auth.MalAuthInterceptor
 import com.myanitrack.core.network.auth.MalAuthenticator
 import com.myanitrack.core.network.jikan.JikanApiService
+import com.myanitrack.core.network.jikan.JikanCircuitBreakerInterceptor
 import com.myanitrack.core.network.jikan.JikanRateLimitInterceptor
 import com.myanitrack.core.network.jikan.JikanRetryInterceptor
 import com.myanitrack.core.network.mal.MalApiService
@@ -107,6 +108,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun providesJikanCircuitBreakerInterceptor(): JikanCircuitBreakerInterceptor =
+        JikanCircuitBreakerInterceptor(clock = System::currentTimeMillis)
+
+    @Provides
+    @Singleton
     fun providesJikanRateLimitInterceptor(): JikanRateLimitInterceptor =
         JikanRateLimitInterceptor(
             clock = System::currentTimeMillis,
@@ -119,20 +125,25 @@ object NetworkModule {
         JikanRetryInterceptor(sleeper = { millis -> Thread.sleep(millis) })
 
     /**
-     * Jikan istemcisi: once yeniden deneme, sonra hiz siniri.
+     * Jikan istemcisi. Katman sirasi onemli:
      *
-     * Sira onemli - yeniden deneme interceptor-i disarida oldugu icin her deneme
-     * hiz sinirlayicidan yeniden gecer; boylece backoff sirasinda bile 3/sn ve
-     * 60/dk pencereleri asilmaz.
+     * 1. **Devre kesici** (en disda): bir MANTIKSAL cagriyi bir kez degerlendirir.
+     *    Yeniden denemelerin disinda oldugu icin tek bir basarisiz istek sayaci
+     *    ikiye katlamaz; ayrica devre acikken yeniden deneme hic calismaz.
+     * 2. **Yeniden deneme**: gecici hatalarda ustel geri cekilme.
+     * 3. **Hiz siniri** (en icte): her DENEME araliklama kuralindan gecer, boylece
+     *    backoff sirasinda bile Jikan-in limiti asilmaz.
      */
     @Provides
     @Singleton
     @JikanClient
     fun providesJikanOkHttpClient(
         @UnauthenticatedClient baseClient: OkHttpClient,
+        circuitBreakerInterceptor: JikanCircuitBreakerInterceptor,
         retryInterceptor: JikanRetryInterceptor,
         rateLimitInterceptor: JikanRateLimitInterceptor,
     ): OkHttpClient = baseClient.newBuilder()
+        .addInterceptor(circuitBreakerInterceptor)
         .addInterceptor(retryInterceptor)
         .addInterceptor(rateLimitInterceptor)
         .build()
