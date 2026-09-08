@@ -52,7 +52,16 @@ class JikanRetryInterceptor(
         (BASE_DELAY_MS shl (attempt - 1)).coerceAtMost(MAX_DELAY_MS)
 
     internal companion object {
-        const val MAX_ATTEMPTS = 3
+        /**
+         * Toplam deneme sayisi.
+         *
+         * 3-ten 2-ye dusuruldu: Jikan 504 dondugunde sorun MAL-in erisilemez
+         * olmasi: birkac saniye icinde tekrar denemek duzeltmiyor, yalnizca
+         * dakikalik istek butcesini yakip ustune 429 aldiriyordu. Israrli
+         * yeniden deneme yerine devre kesici devreye giriyor
+         * (bkz. JikanRateLimitInterceptor).
+         */
+        const val MAX_ATTEMPTS = 2
         const val BASE_DELAY_MS = 1_000L
         const val MAX_DELAY_MS = 8_000L
         const val HTTP_TOO_MANY_REQUESTS = 429

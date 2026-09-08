@@ -7,7 +7,7 @@
     <string name="error_not_found">Not found on MyAnimeList.</string>
     <string name="error_rate_limited">Too many requests. Please wait a moment.</string>
     <string name="error_rate_limited_seconds">Too many requests. Try again in %1$d seconds.</string>
-    <string name="error_server">MyAnimeList is having trouble (%1$d). Try again later.</string>
+    <string name="error_server">MyAnimeList is not responding right now. This is on their side - cached content still works. Try again in a few minutes.</string>
     <string name="error_http">Request failed (%1$d).</string>
     <string name="error_serialization">Unexpected response from MyAnimeList.</string>
     <string name="error_storage">Could not read local data.</string>

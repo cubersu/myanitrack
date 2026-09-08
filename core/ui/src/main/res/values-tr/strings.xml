@@ -6,7 +6,7 @@
     <string name="error_not_found">MyAnimeList uzerinde bulunamadi.</string>
     <string name="error_rate_limited">Cok fazla istek gonderildi. Biraz bekleyin.</string>
     <string name="error_rate_limited_seconds">Cok fazla istek. %1$d saniye sonra tekrar deneyin.</string>
-    <string name="error_server">MyAnimeList sorun yasiyor (%1$d). Sonra tekrar deneyin.</string>
+    <string name="error_server">MyAnimeList su an yanit vermiyor. Sorun onlarin tarafinda - onbellekteki icerik calismaya devam ediyor. Birkac dakika sonra tekrar deneyin.</string>
     <string name="error_http">Istek basarisiz oldu (%1$d).</string>
     <string name="error_serialization">MyAnimeList beklenmeyen bir yanit dondu.</string>
     <string name="error_storage">Yerel veriler okunamadi.</string>
