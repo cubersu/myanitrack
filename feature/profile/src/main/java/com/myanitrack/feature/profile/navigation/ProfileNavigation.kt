@@ -34,3 +34,21 @@ fun NavGraphBuilder.userProfileScreen(
         )
     }
 }
+
+/** Profil yorumlari (WebView). MAL sayisal kullanici kimligi gerekir. */
+@Serializable
+data class ProfileCommentsRoute(val malUserId: Int)
+
+fun NavController.navigateToProfileComments(malUserId: Int) {
+    navigate(ProfileCommentsRoute(malUserId))
+}
+
+fun NavGraphBuilder.profileCommentsScreen(onBack: () -> Unit) {
+    composable<ProfileCommentsRoute> { backStackEntry ->
+        val malUserId = backStackEntry.arguments?.getInt("malUserId") ?: 0
+        com.myanitrack.feature.profile.ProfileCommentsRoute(
+            malUserId = malUserId,
+            onBack = onBack,
+        )
+    }
+}

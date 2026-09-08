@@ -40,6 +40,8 @@ dependencies {
     api(libs.androidx.paging.compose)
     api(libs.androidx.lifecycle.runtime.compose)
     api(libs.androidx.lifecycle.viewmodel.compose)
+    api(libs.androidx.webkit)
+    api(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
 
     testImplementation(platform(libs.junit.bom))

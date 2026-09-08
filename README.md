@@ -18,8 +18,8 @@ mümkün olan her yerde **resmî ve stabil API'leri** kullanır; scraping gerekt
 | 2 | Jikan entegrasyonu, detay sayfası, arama, top/sezonluk listeler | ✅ Tamamlandı |
 | 3 | Yayın takvimi + geri sayım bildirimleri, haberler | ✅ Tamamlandı |
 | 4 | Profil sayfaları, RSS arkadaş akışı, geçmiş | ✅ Tamamlandı |
-| 5 | Forum ve mesajlaşma (WebView — Seçenek A) | ⬜ Sırada |
-| 6 | Ayarlar cilası, deep link, animasyonlar, offline mod | ⬜ |
+| 5 | Forum ve mesajlaşma (WebView — Seçenek A) | ✅ Tamamlandı |
+| 6 | Ayarlar cilası, deep link, animasyonlar, offline mod | ⬜ Sırada |
 
 ---
 
@@ -275,10 +275,54 @@ aynı repository arayüzünün arkasında denenebilir.
 
 ---
 
+## Faz 5'te neler var
+
+**Forum, özel mesajlar ve profil yorumları — WebView (Seçenek A)**
+- `:feature:forum` → `myanimelist.net/forum/`
+- `:feature:messaging` → `myanimelist.net/mymessages.php`
+- Profil yorumları (okuma + yazma) → `comments.php?id=<malId>`, profil menüsünden
+- Üçü de `:core:ui`'daki tek bir `MalWebViewScreen` bileşenini kullanıyor
+
+**⚠️ Oturum devri neden yok — bunu bilerek okuyun**
+
+Prompt'ta "login sonrası cookie'leri WebView'e aktar" deniyordu. Bu, **bizim
+mimarimizde mümkün değil** ve bu bir eksiklik değil, bilinçli tercihin sonucu:
+
+- Uygulama MAL'a **OAuth2 + PKCE** ile bağlanıyor. Elimizde `api.myanimelist.net`
+  için geçerli bir **bearer token** var — `myanimelist.net` için bir **oturum çerezi
+  yok**. MAL'ın API kimlik doğrulaması ile web oturumu ayrı sistemler; birini
+  diğerine çevirmenin desteklenen bir yolu yok.
+- Orijinal MALClient çerez tabanlı giriş (login formunu scrape ederek) yaptığı için
+  çerezleri devredebiliyordu — ve çökme sebebi tam olarak bu kırılganlıktı.
+- Sonuç: WebView kendi kalıcı çerez kavanozunu kullanıyor. Kullanıcı forum/mesajlar
+  için MAL'a **bir kez de WebView içinde** giriş yapıyor; çerezler kalıcı olduğu için
+  tekrarlanmıyor. Ekranın üstünde bunu açıklayan, kapatılabilir bir bilgi şeridi var.
+
+**Neden bu modüller aslında kırılgan değil**
+- Sayfayı biz ayrıştırmıyoruz; MAL HTML'ini değiştirdiğinde bu modüller bozulmaz.
+  "Kırılgan modül" adı planla tutarlı olsun diye korundu, ama Seçenek A'nın tüm
+  amacı kırılganlığı ortadan kaldırmaktı.
+- Her iki modül de yalnızca bir URL biliyor; uygulamanın geri kalanıyla bağlantısı
+  yok. Tümden kaldırılsalar derleme etkilenmez.
+
+**WebView ayrıntıları**
+- Kalıcı çerezler (`CookieManager`, sayfa sonunda ve ekran kapanışında `flush`)
+- Cihazın geri hareketi önce WebView geçmişinde ilerler, yığın bitince ekrandan çıkar
+- MAL ve alt alan adları içeride kalır, diğer siteler sistem tarayıcısında açılır —
+  `notmyanimelist.net` gibi benzer alan adlarına karşı test edildi
+- Koyu temada sayfa da kararıyor (`ALGORITHMIC_DARKENING`, destekleyen sürümlerde)
+- Yerel dosya erişimi kapalı; yalnızca ana belge hatası hata ekranı gösteriyor
+
+**Gezinme**
+- Alt çubuk 5 sekmede dolu olduğu için Forum / Mesajlar / Profil yorumları / Ayarlar
+  profil ekranının taşma menüsünde toplandı (hepsi hesap bağlamlı)
+
+---
+
 ## Bilinen sınırlar
 
-- **Profil yorumları henüz yok.** Bunun API'si yok, scraping gerekiyor; prompt'taki
-  plana uygun olarak kırılgan modüle (Faz 5, WebView) bırakıldı.
+- **Forum/mesajlar için MAL sitesine ayrı giriş gerekiyor** (yukarıdaki mimari not).
+  Bu kalıcı bir sonuç, sonraki fazlarda değişmeyecek.
 - **Arkadaş akışı 15 arkadaşla sınırlı** (yukarıdaki gerekçe). Sınır tek sabitte,
   gerekirse artırılabilir.
 - **Favoriler sekmesi yok.** Jikan `/users/{u}/favorites` ucu var ama Faz 4 kapsamına
@@ -292,7 +336,6 @@ aynı repository arayüzünün arkasında denenebilir.
 - **Bildirim zamanlaması ±birkaç dakika sapabilir** (WorkManager'ın doğası). Tam
   zamanlı alarm bilinçli olarak tercih edilmedi.
 - **Manga incelemeleri Jikan'da anime kadar zengin değil**; bazı başlıklarda boş gelebilir.
-- **Forum ve mesajlaşma sekmeleri henüz yok** (Faz 5).
 
 ---
 

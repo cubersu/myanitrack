@@ -21,6 +21,13 @@
     <string name="action_delete">Delete</string>
     <string name="action_refresh">Refresh</string>
 
+    <!-- WebView (forum, mesajlar, profil yorumlari) -->
+    <string name="webview_back">Back</string>
+    <string name="webview_open_in_browser">Open in browser</string>
+    <string name="webview_error_title">Page could not be loaded</string>
+    <string name="webview_error_description">Check your connection and try again.</string>
+    <string name="webview_sign_in_hint">Forum and messages need a separate sign-in on the MyAnimeList website. Your app login uses the official API, which does not create a website session.</string>
+
     <!-- Liste kaydi duzenleme sayfasi ve durum etiketleri (birden fazla feature kullaniyor) -->
     <string name="status_watching">Watching</string>
     <string name="status_reading">Reading</string>

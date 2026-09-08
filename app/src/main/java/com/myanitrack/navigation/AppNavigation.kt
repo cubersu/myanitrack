@@ -23,10 +23,16 @@ import com.myanitrack.feature.browse.BrowseRoute
 import com.myanitrack.feature.calendar.CalendarRoute
 import com.myanitrack.feature.details.navigation.mediaDetailsScreen
 import com.myanitrack.feature.details.navigation.navigateToMediaDetails
+import com.myanitrack.feature.forum.navigation.forumScreen
+import com.myanitrack.feature.forum.navigation.navigateToForum
+import com.myanitrack.feature.messaging.navigation.messagingScreen
+import com.myanitrack.feature.messaging.navigation.navigateToMessaging
 import com.myanitrack.feature.mylist.MyListRoute
 import com.myanitrack.feature.news.NewsRoute
 import com.myanitrack.feature.profile.ProfileRoute
+import com.myanitrack.feature.profile.navigation.navigateToProfileComments
 import com.myanitrack.feature.profile.navigation.navigateToUserProfile
+import com.myanitrack.feature.profile.navigation.profileCommentsScreen
 import com.myanitrack.feature.profile.navigation.userProfileScreen
 import com.myanitrack.feature.settings.SettingsRoute
 import kotlin.reflect.KClass
@@ -105,6 +111,9 @@ fun AppNavHost(
     }
     val openUser: (String) -> Unit = navController::navigateToUserProfile
     val openSettings: () -> Unit = { navController.navigate(SettingsDestination) }
+    val openForum: () -> Unit = navController::navigateToForum
+    val openMessages: () -> Unit = navController::navigateToMessaging
+    val openComments: (Int) -> Unit = navController::navigateToProfileComments
 
     NavHost(
         navController = navController,
@@ -116,6 +125,9 @@ fun AppNavHost(
             onOpenMedia = openMedia,
             onOpenUser = openUser,
             onOpenSettings = openSettings,
+            onOpenForum = openForum,
+            onOpenMessages = openMessages,
+            onOpenComments = openComments,
         )
     }
 }
@@ -125,6 +137,9 @@ private fun NavGraphBuilder.mainGraph(
     onOpenMedia: (MediaType, Int) -> Unit,
     onOpenUser: (String) -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenForum: () -> Unit,
+    onOpenMessages: () -> Unit,
+    onOpenComments: (Int) -> Unit,
 ) {
     composable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia) }
     composable<BrowseDestination> { BrowseRoute(onOpenMedia = onOpenMedia) }
@@ -136,9 +151,17 @@ private fun NavGraphBuilder.mainGraph(
             onOpenMedia = onOpenMedia,
             onOpenUser = onOpenUser,
             onOpenSettings = onOpenSettings,
+            onOpenForum = onOpenForum,
+            onOpenMessages = onOpenMessages,
+            onOpenComments = onOpenComments,
         )
     }
     composable<SettingsDestination> { SettingsRoute() }
     mediaDetailsScreen(onBack = onBack, onOpenMedia = onOpenMedia)
     userProfileScreen(onBack = onBack, onOpenMedia = onOpenMedia, onOpenUser = onOpenUser)
+
+    // Kirilgan moduller: MAL API-si olmayan bolumler WebView ile aciliyor.
+    forumScreen(onBack = onBack)
+    messagingScreen(onBack = onBack)
+    profileCommentsScreen(onBack = onBack)
 }

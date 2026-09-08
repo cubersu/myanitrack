@@ -4,6 +4,11 @@
     <string name="profile_back">Geri</string>
     <string name="profile_open_on_mal">MyAnimeList-te ac</string>
     <string name="profile_settings">Ayarlar</string>
+    <string name="profile_comments_title">Profil yorumlari</string>
+    <string name="profile_more">Daha fazla</string>
+    <string name="profile_menu_forum">Forum</string>
+    <string name="profile_menu_messages">Mesajlar</string>
+    <string name="profile_menu_comments">Profil yorumlari</string>
     <string name="profile_signed_out_title">Giris yapilmadi</string>
     <string name="profile_signed_out_description">MyAnimeList profilinizi gormek icin giris yapin.</string>
     <string name="profile_unavailable_title">Bu profil yuklenemedi</string>

@@ -19,9 +19,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +37,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,10 +73,14 @@ fun ProfileRoute(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     onOpenSettings: (() -> Unit)? = null,
+    onOpenForum: (() -> Unit)? = null,
+    onOpenMessages: (() -> Unit)? = null,
+    onOpenComments: ((Int) -> Unit)? = null,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    var menuOpen by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -98,14 +107,6 @@ fun ProfileRoute(
                         }
                     },
                     actions = {
-                        if (onOpenSettings != null) {
-                            IconButton(onClick = onOpenSettings) {
-                                Icon(
-                                    Icons.Outlined.Settings,
-                                    contentDescription = stringResource(R.string.profile_settings),
-                                )
-                            }
-                        }
                         uiState.profile?.let { profile ->
                             IconButton(
                                 onClick = {
@@ -124,6 +125,16 @@ fun ProfileRoute(
                                 )
                             }
                         }
+
+                        ProfileOverflowMenu(
+                            expanded = menuOpen,
+                            onExpandedChange = { menuOpen = it },
+                            malUserId = uiState.profile?.malId,
+                            onOpenForum = onOpenForum,
+                            onOpenMessages = onOpenMessages,
+                            onOpenComments = onOpenComments,
+                            onOpenSettings = onOpenSettings,
+                        )
                     },
                 )
                 if (uiState.hasUser) {
@@ -537,3 +548,73 @@ private fun Instant.formatDateTime(): String =
 
 /** Ondalik degerleri iki basamakla, yerel bicimde gosterir. */
 private fun Double.formatScore(): String = String.format(Locale.getDefault(), "%.1f", this)
+
+/**
+ * Hesap ve topluluk eylemleri.
+ *
+ * Alt gezinme cubugu Material 3-un onerdigi 5 sekmede dolu oldugu icin forum,
+ * mesajlar, profil yorumlari ve ayarlar buraya toplandi. Hepsi hesap baglamli
+ * oldugundan profil ekrani dogal ev.
+ *
+ * Yorumlar yalnizca MAL sayisal kimligi bilindiginde acilabilir (adres kullanici
+ * adini degil kimligi istiyor).
+ */
+@Composable
+private fun ProfileOverflowMenu(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    malUserId: Int?,
+    onOpenForum: (() -> Unit)?,
+    onOpenMessages: (() -> Unit)?,
+    onOpenComments: ((Int) -> Unit)?,
+    onOpenSettings: (() -> Unit)?,
+) {
+    val hasAnyAction = onOpenForum != null || onOpenMessages != null ||
+        onOpenSettings != null || (onOpenComments != null && malUserId != null)
+    if (!hasAnyAction) return
+
+    IconButton(onClick = { onExpandedChange(true) }) {
+        Icon(
+            Icons.Outlined.MoreVert,
+            contentDescription = stringResource(R.string.profile_more),
+        )
+    }
+    DropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
+        onOpenForum?.let { action ->
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.profile_menu_forum)) },
+                onClick = {
+                    onExpandedChange(false)
+                    action()
+                },
+            )
+        }
+        onOpenMessages?.let { action ->
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.profile_menu_messages)) },
+                onClick = {
+                    onExpandedChange(false)
+                    action()
+                },
+            )
+        }
+        if (onOpenComments != null && malUserId != null) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.profile_menu_comments)) },
+                onClick = {
+                    onExpandedChange(false)
+                    onOpenComments(malUserId)
+                },
+            )
+        }
+        onOpenSettings?.let { action ->
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.profile_settings)) },
+                onClick = {
+                    onExpandedChange(false)
+                    action()
+                },
+            )
+        }
+    }
+}
