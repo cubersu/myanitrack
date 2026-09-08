@@ -292,7 +292,7 @@ aynı repository arayüzünün arkasında denenebilir.
 - **Bildirim zamanlaması ±birkaç dakika sapabilir** (WorkManager'ın doğası). Tam
   zamanlı alarm bilinçli olarak tercih edilmedi.
 - **Manga incelemeleri Jikan'da anime kadar zengin değil**; bazı başlıklarda boş gelebilir.
-- **Profil, forum ve mesajlaşma sekmeleri henüz yok** (Faz 4–5).
+- **Forum ve mesajlaşma sekmeleri henüz yok** (Faz 5).
 
 ---
 
