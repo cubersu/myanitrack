@@ -169,7 +169,7 @@ aynı repository arayüzünün arkasında denenebilir.
   429 yiyip geri çekilmek yerine limiti hiç aşmıyoruz.
 - 429/500/502/503/504 için üstel geri çekilmeli otomatik yeniden deneme (1s → 2s → 4s).
   Jikan'ın upstream'i (MAL) sık sık 504 döndürüyor; bu katman onu kullanıcıya göstermiyor.
-- **cache-then-network:** Room'daki `remote_cache` tablosu. Taze kayıt varsa ağa hiç
+- **cache-then-network:** Room-daki `remote_cache` tablosu. Taze kayıt varsa ağa hiç
   dokunulmaz; ağ hata verir ve elde bayat kayıt varsa **bayat kayıt döndürülür** —
   Jikan çöktüğünde ekran boşalmaz. TTL: detay 24s, karakter/staff 7g, listeler 6s, türler 30g.
 - Bozuk önbellek kaydı uygulamayı çökertmez: silinir, ağdan tazelenir.

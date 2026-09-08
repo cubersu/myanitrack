@@ -4,21 +4,25 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 /**
- * Jikan-in yayimladigi istek limitini ISTEMCI TARAFINDA zorlar: 3 istek/saniye
- * ve 60 istek/dakika.
+ * Jikan istek limitini istemci tarafinda zorlar.
  *
- * 429 yedigimizde geri cekilmek yerine limiti hic asmamayi tercih ediyoruz;
- * boylece hem Jikan-in ucretsiz altyapisina saygili davranmis oluyoruz hem de
- * kullanici gereksiz gecikme yasamiyor.
+ * ## Neden "saniyede 3" degil de "her 360 ms-de bir"
+ * Jikan dokumani "3 istek/saniye" diyor, ama sunucu tarafinda bu nginx `limit_req`
+ * ile uygulaniyor: kova saniyede 3 jeton hizinda DOLAR, yani istekler ~333 ms
+ * araliklarla kabul edilir. Ayni anda gonderilen 3 istekte birincisi gecer,
+ * digerleri 429 alir.
  *
- * Calisma bicimi: son gonderilen isteklerin zaman damgalari kayan bir pencerede
- * tutulur. Yeni istek her iki pencereye de sigmiyorsa, sigacagi ana kadar
- * cagiran is parcacigi uyutulur. OkHttp interceptor-lari zaten arka plan is
- * parcaciklarinda calistigi icin bloklama guvenlidir.
+ * Ilk uygulama "1 saniyede en fazla 3" seklindeydi ve patlamaya (burst) izin
+ * veriyordu; detay ekrani bes cagriyi paralel yaptigi icin her acilista 429
+ * uretiyordu. Bu yuzden istekler artik ARALIKLI gonderiliyor.
+ *
+ * ## Sunucudan gelen geri bildirim
+ * Yine de 429 gelirse `Retry-After` basligi kadar - yoksa varsayilan sure kadar -
+ * TUM Jikan trafigi duraklatilir. Boylece yeniden deneme katmani limiti daha da
+ * zorlamak yerine bekler; yeniden deneme firtinasi olusmaz.
+ *
+ * Bloklama guvenli: OkHttp interceptor-lari zaten arka plan is parcaciklarinda calisir.
  */
-// Not: @Inject constructor yerine NetworkModule icinde @Provides ile uretiliyor.
-// Hilt varsayilan degerli constructor parametrelerini kabul etmiyor; saat ve uyku
-// islevlerini disaridan verilebilir birakmak ise testler icin gerekli.
 class JikanRateLimitInterceptor(
     private val clock: () -> Long,
     private val sleeper: (Long) -> Unit,
@@ -26,11 +30,19 @@ class JikanRateLimitInterceptor(
 
     /** Gonderim zamanlari, eskiden yeniye. Yalnizca [lock] altinda erisilir. */
     private val recentRequests = ArrayDeque<Long>()
+
+    /** Sunucu 429 dediginde bu ana kadar hic istek gonderilmez. */
+    private var cooldownUntil = 0L
+
     private val lock = Any()
 
     override fun intercept(chain: Interceptor.Chain): Response {
         awaitSlot()
-        return chain.proceed(chain.request())
+        val response = chain.proceed(chain.request())
+        if (response.code == HTTP_TOO_MANY_REQUESTS) {
+            applyServerBackoff(response.retryAfterMillis())
+        }
+        return response
     }
 
     /**
@@ -56,15 +68,29 @@ class JikanRateLimitInterceptor(
         }
     }
 
-    /** Iki pencereden hangisi daha uzun beklemeyi gerektiriyorsa o kazanir. */
+    /** Sunucu 429 dedi: en az [millis] boyunca hicbir istek gonderme. */
+    internal fun applyServerBackoff(millis: Long) {
+        synchronized(lock) {
+            val until = clock() + millis.coerceAtLeast(MIN_SERVER_BACKOFF_MS)
+            if (until > cooldownUntil) cooldownUntil = until
+        }
+    }
+
+    /** Uc kisittan en uzun beklemeyi gerektiren kazanir. */
     private fun requiredDelay(now: Long): Long {
-        val perSecondDelay = nthNewestTimestamp(MAX_PER_SECOND)
-            ?.let { it + SECOND_WINDOW_MS - now }
+        val cooldownDelay = cooldownUntil - now
+
+        // Ardisik istekler arasinda en az MIN_INTERVAL_MS bosluk.
+        val spacingDelay = recentRequests.lastOrNull()
+            ?.let { it + MIN_INTERVAL_MS - now }
             ?: 0L
+
+        // Dakikada en fazla MAX_PER_MINUTE istek.
         val perMinuteDelay = nthNewestTimestamp(MAX_PER_MINUTE)
             ?.let { it + MINUTE_WINDOW_MS - now }
             ?: 0L
-        return maxOf(perSecondDelay, perMinuteDelay)
+
+        return maxOf(cooldownDelay, spacingDelay, perMinuteDelay)
     }
 
     /**
@@ -72,7 +98,11 @@ class JikanRateLimitInterceptor(
      * Henuz [limit] kadar istek yapilmadiysa null (bekleme gerekmez).
      */
     private fun nthNewestTimestamp(limit: Int): Long? =
-        if (recentRequests.size < limit) null else recentRequests.elementAt(recentRequests.size - limit)
+        if (recentRequests.size < limit) {
+            null
+        } else {
+            recentRequests.elementAt(recentRequests.size - limit)
+        }
 
     private fun purgeOlderThan(threshold: Long) {
         while (recentRequests.isNotEmpty() && recentRequests.first() <= threshold) {
@@ -80,11 +110,26 @@ class JikanRateLimitInterceptor(
         }
     }
 
+    private fun Response.retryAfterMillis(): Long =
+        header("Retry-After")?.toLongOrNull()?.times(1_000L) ?: DEFAULT_SERVER_BACKOFF_MS
+
     internal companion object {
-        const val MAX_PER_SECOND = 3
+        /**
+         * Ardisik istekler arasindaki en kisa sure.
+         * 3 istek/sn siniri icin teorik alt sinir ~334 ms; saat sapmalarina karsi
+         * biraz pay birakiliyor.
+         */
+        const val MIN_INTERVAL_MS = 360L
+
         const val MAX_PER_MINUTE = 60
-        const val SECOND_WINDOW_MS = 1_000L
         const val MINUTE_WINDOW_MS = 60_000L
+        const val HTTP_TOO_MANY_REQUESTS = 429
+
+        /** `Retry-After` yoksa kullanilacak duraklama. */
+        const val DEFAULT_SERVER_BACKOFF_MS = 2_000L
+
+        /** Sunucu cok kisa bir sure onerse bile en az bu kadar bekle. */
+        const val MIN_SERVER_BACKOFF_MS = 1_000L
 
         /** Tek seferde uzun uyumak yerine bolerek uyu; iptal tepkisi hizli kalsin. */
         const val MAX_SINGLE_SLEEP_MS = 1_000L

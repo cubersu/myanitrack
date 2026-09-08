@@ -64,12 +64,31 @@ fun BrowseRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Yalnizca ACIK sekmenin sayfalayicisi toplaniyor. Dordunu birden toplamak
+    // her ekran acilisinda dort Jikan istegi demek olurdu ve hiz sinirini bosuna
+    // yerdi; kullanici zaten tek seferde tek sekme goruyor.
     BrowseScreen(
         uiState = uiState,
-        topResults = viewModel.topResults.collectAsLazyPagingItems(),
-        seasonResults = viewModel.seasonResults.collectAsLazyPagingItems(),
-        searchResults = viewModel.searchResults.collectAsLazyPagingItems(),
-        recommendations = viewModel.recommendations.collectAsLazyPagingItems(),
+        topResults = if (uiState.tab == BrowseTab.TOP) {
+            viewModel.topResults.collectAsLazyPagingItems()
+        } else {
+            null
+        },
+        seasonResults = if (uiState.tab == BrowseTab.SEASON) {
+            viewModel.seasonResults.collectAsLazyPagingItems()
+        } else {
+            null
+        },
+        searchResults = if (uiState.tab == BrowseTab.SEARCH) {
+            viewModel.searchResults.collectAsLazyPagingItems()
+        } else {
+            null
+        },
+        recommendations = if (uiState.tab == BrowseTab.RECOMMENDATIONS) {
+            viewModel.recommendations.collectAsLazyPagingItems()
+        } else {
+            null
+        },
         onTabChange = viewModel::selectTab,
         onMediaTypeChange = viewModel::selectMediaType,
         onTopCategoryChange = viewModel::selectTopCategory,
@@ -86,10 +105,10 @@ fun BrowseRoute(
 @Composable
 internal fun BrowseScreen(
     uiState: BrowseUiState,
-    topResults: LazyPagingItems<MediaNode>,
-    seasonResults: LazyPagingItems<MediaNode>,
-    searchResults: LazyPagingItems<MediaNode>,
-    recommendations: LazyPagingItems<RecommendationPair>,
+    topResults: LazyPagingItems<MediaNode>?,
+    seasonResults: LazyPagingItems<MediaNode>?,
+    searchResults: LazyPagingItems<MediaNode>?,
+    recommendations: LazyPagingItems<RecommendationPair>?,
     onTabChange: (BrowseTab) -> Unit,
     onMediaTypeChange: (MediaType) -> Unit,
     onTopCategoryChange: (TopCategory) -> Unit,
@@ -157,7 +176,7 @@ internal fun BrowseScreen(
                         selected = uiState.topCategory,
                         onSelect = onTopCategoryChange,
                     )
-                    MediaGrid(items = topResults, onOpenMedia = onOpenMedia)
+                    topResults?.let { MediaGrid(items = it, onOpenMedia = onOpenMedia) }
                 }
 
                 BrowseTab.SEASON -> {
@@ -168,7 +187,7 @@ internal fun BrowseScreen(
                         onPrevious = onPreviousSeason,
                         onNext = onNextSeason,
                     )
-                    MediaGrid(items = seasonResults, onOpenMedia = onOpenMedia)
+                    seasonResults?.let { MediaGrid(items = it, onOpenMedia = onOpenMedia) }
                 }
 
                 BrowseTab.SEARCH -> {
@@ -189,13 +208,12 @@ internal fun BrowseScreen(
                             onSelect = onGenreChange,
                         )
                     }
-                    MediaGrid(items = searchResults, onOpenMedia = onOpenMedia)
+                    searchResults?.let { MediaGrid(items = it, onOpenMedia = onOpenMedia) }
                 }
 
-                BrowseTab.RECOMMENDATIONS -> RecommendationList(
-                    items = recommendations,
-                    onOpenMedia = onOpenMedia,
-                )
+                BrowseTab.RECOMMENDATIONS -> recommendations?.let {
+                    RecommendationList(items = it, onOpenMedia = onOpenMedia)
+                }
             }
         }
     }
