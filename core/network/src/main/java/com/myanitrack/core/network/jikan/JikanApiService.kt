@@ -8,7 +8,10 @@ import com.myanitrack.core.network.jikan.dto.JikanRecommendationDto
 import com.myanitrack.core.network.jikan.dto.JikanRecommendationEntriesDto
 import com.myanitrack.core.network.jikan.dto.JikanResponse
 import com.myanitrack.core.network.jikan.dto.JikanReviewDto
+import com.myanitrack.core.network.jikan.dto.JikanFriendDto
+import com.myanitrack.core.network.jikan.dto.JikanHistoryDto
 import com.myanitrack.core.network.jikan.dto.JikanStaffEntryDto
+import com.myanitrack.core.network.jikan.dto.JikanUserProfileDto
 import com.myanitrack.core.network.jikan.dto.JikanVideosDto
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -149,6 +152,29 @@ interface JikanApiService {
     suspend fun getGlobalMangaRecommendations(
         @Query("page") page: Int = 1,
     ): JikanPagedResponse<JikanRecommendationEntriesDto>
+
+    // --- Profil ---
+
+    /**
+     * Kullanici profili + istatistikler.
+     *
+     * MAL API v2-nin `/users/{user_name}` ucu yalnizca `@me` kabul ettigi icin
+     * baskasinin profiline bakmanin tek yolu bu.
+     */
+    @GET("users/{username}/full")
+    suspend fun getUserProfile(@Path("username") username: String): JikanResponse<JikanUserProfileDto>
+
+    @GET("users/{username}/history")
+    suspend fun getUserHistory(
+        @Path("username") username: String,
+        @Query("type") type: String? = null,
+    ): JikanResponse<List<JikanHistoryDto>>
+
+    @GET("users/{username}/friends")
+    suspend fun getUserFriends(
+        @Path("username") username: String,
+        @Query("page") page: Int = 1,
+    ): JikanPagedResponse<JikanFriendDto>
 
     companion object {
         /** Jikan sayfa basina en fazla 25 kayit doner. */

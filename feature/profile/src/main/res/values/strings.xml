@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_title">Profile</string>
+    <string name="profile_back">Back</string>
+    <string name="profile_open_on_mal">Open on MyAnimeList</string>
+    <string name="profile_settings">Settings</string>
+    <string name="profile_signed_out_title">Not signed in</string>
+    <string name="profile_signed_out_description">Sign in to see your MyAnimeList profile.</string>
+    <string name="profile_unavailable_title">Could not load this profile</string>
+
+    <string name="profile_tab_overview">Overview</string>
+    <string name="profile_tab_history">History</string>
+    <string name="profile_tab_friends">Friends</string>
+    <string name="profile_tab_feed">Feed</string>
+
+    <string name="profile_joined">Joined %1$s</string>
+    <string name="profile_last_online">Last online %1$s</string>
+    <string name="profile_location">%1$s</string>
+
+    <string name="profile_stats_anime">Anime statistics</string>
+    <string name="profile_stats_manga">Manga statistics</string>
+    <string name="profile_stat_days">Days</string>
+    <string name="profile_stat_mean_score">Mean score</string>
+    <string name="profile_stat_total">Total entries</string>
+    <string name="profile_stat_episodes">Episodes</string>
+    <string name="profile_stat_chapters">Chapters</string>
+    <string name="profile_stat_volumes">Volumes</string>
+    <string name="profile_stat_rewatched">Rewatched</string>
+    <string name="profile_stat_reread">Reread</string>
+
+    <string name="profile_history_all">All</string>
+    <string name="profile_history_increment">+%1$d</string>
+    <string name="profile_history_empty">No recent activity</string>
+    <string name="profile_friends_empty">No friends to show</string>
+    <string name="profile_friends_since">Friends since %1$s</string>
+    <string name="profile_feed_empty">No updates yet</string>
+    <string name="profile_feed_own_hint">Updates from your friends</string>
+    <string name="profile_feed_other_hint">Recent list updates</string>
+</resources>

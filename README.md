@@ -17,8 +17,8 @@ mümkün olan her yerde **resmî ve stabil API'leri** kullanır; scraping gerekt
 | 1 | Proje iskeleti, MAL OAuth2 girişi, liste CRUD, liste görünümleri | ✅ Tamamlandı |
 | 2 | Jikan entegrasyonu, detay sayfası, arama, top/sezonluk listeler | ✅ Tamamlandı |
 | 3 | Yayın takvimi + geri sayım bildirimleri, haberler | ✅ Tamamlandı |
-| 4 | Profil sayfaları, RSS arkadaş akışı, geçmiş | ⬜ Sırada |
-| 5 | Forum ve mesajlaşma (WebView — Seçenek A) | ⬜ |
+| 4 | Profil sayfaları, RSS arkadaş akışı, geçmiş | ✅ Tamamlandı |
+| 5 | Forum ve mesajlaşma (WebView — Seçenek A) | ⬜ Sırada |
 | 6 | Ayarlar cilası, deep link, animasyonlar, offline mod | ⬜ |
 
 ---
@@ -241,8 +241,48 @@ aynı repository arayüzünün arkasında denenebilir.
 
 ---
 
+## Faz 4'te neler var
+
+**Profil sayfası** (dört sekme: Genel / Geçmiş / Arkadaşlar / Akış)
+- Genel: avatar, konum, katılma ve son görülme tarihi; anime + manga istatistikleri
+  (gün, ortalama puan, toplam kayıt, bölüm/cilt, tekrar sayısı) ve durum dağılım çubuğu
+- Geçmiş: son ilerlemeler (`+2 bölüm` gibi), anime/manga filtresi, dokununca detay sayfası
+- Arkadaşlar: son görülmeye göre sıralı; dokununca o kişinin profili açılır
+- Akış: aşağıda
+- Kendi profilin sekmeden, başkasının profili arkadaş listesinden veya akıştan açılır
+- Ayarlar artık profil ekranının üst çubuğunda (alt çubuk 5 sekmeye indi)
+
+**Kaynak seçimi — MAL API v2'nin sınırı**
+- MAL API v2'nin `/users/{user_name}` ucu **yalnızca `@me` kabul ediyor**; başkasının
+  profiline bakmanın tek yolu Jikan. Bu yüzden kendi profilimiz de Jikan'dan okunuyor —
+  iki ayrı kod yolu tutmak yerine tek yol, daha az sürpriz.
+
+**Arkadaş akışı (RSS)**
+- Kaynak: MAL'ın resmî kullanıcı RSS'i (`rss.php?type=rw|rm&u=<kullanıcı>`) — orijinal
+  MALClient'ın "friends feed" özelliği tam olarak bunu okuyordu
+- Önce arkadaş listesi (Jikan), sonra her arkadaş için RSS; paralel çekiliyor
+- **En son çevrimiçi 15 arkadaşla sınırlı**: 100+ arkadaşı olan hesapta ekran açılışı
+  dakikalar sürerdi. Bir arkadaşın beslemesi alınamazsa o kişi atlanır, akış devam eder.
+- Yapım kimliği ve türü RSS'te ayrı alan olarak yok; MAL bağlantısından ayrıştırılıyor.
+  Beklenen biçime uymayan satır atlanır — besleme bozulursa akış tümden çökmez.
+- Akış sekmesi **tembel yüklenir**: pahalı olduğu için yalnızca sekmeye gelindiğinde
+  ve bir kez çekilir
+
+**Kısmi hata toleransı**
+- Profil, geçmiş ve arkadaşlar paralel çekilir; yalnızca profil çağrısının başarısızlığı
+  ekranı hataya düşürür. Geçmiş ya da arkadaş listesi alınamazsa o sekme boş görünür,
+  profil bilgileri yine gösterilir.
+
+---
+
 ## Bilinen sınırlar
 
+- **Profil yorumları henüz yok.** Bunun API'si yok, scraping gerekiyor; prompt'taki
+  plana uygun olarak kırılgan modüle (Faz 5, WebView) bırakıldı.
+- **Arkadaş akışı 15 arkadaşla sınırlı** (yukarıdaki gerekçe). Sınır tek sabitte,
+  gerekirse artırılabilir.
+- **Favoriler sekmesi yok.** Jikan `/users/{u}/favorites` ucu var ama Faz 4 kapsamına
+  alınmadı; profil zaten dört sekme.
 - **Stüdyo bazlı gezinme henüz yok.** Jikan `producers` parametresi servis katmanında
   hazır ama Keşfet ekranında yalnızca tür filtresi açık.
 - **Çevrimdışı düzenleme kuyruğu yok.** Ağ yokken yapılan değişiklik geri alınır ve

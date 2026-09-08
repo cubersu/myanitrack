@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Newspaper
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
@@ -24,6 +25,9 @@ import com.myanitrack.feature.details.navigation.mediaDetailsScreen
 import com.myanitrack.feature.details.navigation.navigateToMediaDetails
 import com.myanitrack.feature.mylist.MyListRoute
 import com.myanitrack.feature.news.NewsRoute
+import com.myanitrack.feature.profile.ProfileRoute
+import com.myanitrack.feature.profile.navigation.navigateToUserProfile
+import com.myanitrack.feature.profile.navigation.userProfileScreen
 import com.myanitrack.feature.settings.SettingsRoute
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
@@ -48,6 +52,9 @@ data object CalendarDestination
 data object NewsDestination
 
 @Serializable
+data object ProfileDestination
+
+@Serializable
 data object SettingsDestination
 
 /** Alt gezinme cubugundaki sekmeler. */
@@ -60,7 +67,7 @@ enum class TopLevelDestination(
     BROWSE(BrowseDestination::class, Icons.Outlined.Explore, R.string.nav_browse),
     CALENDAR(CalendarDestination::class, Icons.Outlined.CalendarMonth, R.string.nav_calendar),
     NEWS(NewsDestination::class, Icons.Outlined.Newspaper, R.string.nav_news),
-    SETTINGS(SettingsDestination::class, Icons.Outlined.Settings, R.string.nav_settings),
+    PROFILE(ProfileDestination::class, Icons.Outlined.Person, R.string.nav_profile),
 }
 
 fun NavDestination?.isTopLevel(destination: TopLevelDestination): Boolean =
@@ -84,7 +91,7 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
         TopLevelDestination.BROWSE -> navigate(BrowseDestination, options)
         TopLevelDestination.CALENDAR -> navigate(CalendarDestination, options)
         TopLevelDestination.NEWS -> navigate(NewsDestination, options)
-        TopLevelDestination.SETTINGS -> navigate(SettingsDestination, options)
+        TopLevelDestination.PROFILE -> navigate(ProfileDestination, options)
     }
 }
 
@@ -96,24 +103,42 @@ fun AppNavHost(
     val openMedia: (MediaType, Int) -> Unit = { mediaType, malId ->
         navController.navigateToMediaDetails(mediaType, malId)
     }
+    val openUser: (String) -> Unit = navController::navigateToUserProfile
+    val openSettings: () -> Unit = { navController.navigate(SettingsDestination) }
 
     NavHost(
         navController = navController,
         startDestination = MyListDestination,
         modifier = modifier,
     ) {
-        mainGraph(onBack = navController::popBackStack, onOpenMedia = openMedia)
+        mainGraph(
+            onBack = { navController.popBackStack() },
+            onOpenMedia = openMedia,
+            onOpenUser = openUser,
+            onOpenSettings = openSettings,
+        )
     }
 }
 
 private fun NavGraphBuilder.mainGraph(
     onBack: () -> Unit,
     onOpenMedia: (MediaType, Int) -> Unit,
+    onOpenUser: (String) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     composable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia) }
     composable<BrowseDestination> { BrowseRoute(onOpenMedia = onOpenMedia) }
     composable<CalendarDestination> { CalendarRoute(onOpenMedia = onOpenMedia) }
     composable<NewsDestination> { NewsRoute() }
+    composable<ProfileDestination> {
+        // Sekmeden acilan kendi profilimiz: geri dugmesi yok, ayarlar buradan aciliyor.
+        ProfileRoute(
+            onOpenMedia = onOpenMedia,
+            onOpenUser = onOpenUser,
+            onOpenSettings = onOpenSettings,
+        )
+    }
     composable<SettingsDestination> { SettingsRoute() }
     mediaDetailsScreen(onBack = onBack, onOpenMedia = onOpenMedia)
+    userProfileScreen(onBack = onBack, onOpenMedia = onOpenMedia, onOpenUser = onOpenUser)
 }

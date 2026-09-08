@@ -4,6 +4,7 @@
     <string name="nav_browse">Kesfet</string>
     <string name="nav_calendar">Takvim</string>
     <string name="nav_news">Haberler</string>
+    <string name="nav_profile">Profil</string>
     <string name="nav_settings">Ayarlar</string>
 
     <string name="notification_channel_airing">Yayin hatirlatmalari</string>
