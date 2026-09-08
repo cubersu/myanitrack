@@ -1,4 +1,4 @@
-| **WebView** (Faz 5) | Forum, özel mesajlar, profil yorumları — API yok | Kullanıcı sitede |# MyAniTrack
+# MyAniTrack
 
 MyAnimeList için modern, native bir Android istemcisi — Google Play'den kaldırılan
 [MALClient](https://github.com/Drutol/MALClient) (Xamarin/C#, UWP+Android) uygulamasının
@@ -112,7 +112,7 @@ gerektiğini açıkça söyler.
 | **MAL API v2** (OAuth2 + PKCE) | Giriş, liste CRUD, profil temel bilgileri, arama | ✅ Tüm yazma işlemleri **yalnızca** buradan |
 | **Jikan v4** (Faz 2) | Top/sezonluk listeler, karakter & staff, review, öneri, haber, takvim | ❌ Salt okunur |
 | **MAL RSS** (resmî) | Haber akışı (Faz 3), arkadaş akışı (Faz 4) | ❌ Salt okunur |
-| **WebView** (Faz 5) | Forum ve özel mesajlar — MAL'ın API'si yok | Kullanıcı sitede |
+| **WebView** (Faz 5) | Forum, özel mesajlar, profil yorumları — MAL API vermiyor | Kullanıcı sitede |
 
 Forum/mesajlaşma için **Seçenek A (WebView)** seçildi: MAL'ın HTML yapısı değişse
 bile uygulama bozulmaz. Native scraping (Seçenek B) istenirse ayrı bir dalda,
