@@ -54,7 +54,10 @@ fun MediaListEntryEntity.toDomain(): MediaListEntry {
     )
 }
 
-fun MediaListEntry.toEntity(pendingSync: Boolean = false): MediaListEntryEntity =
+fun MediaListEntry.toEntity(
+    pendingSync: Boolean = false,
+    pendingDelete: Boolean = false,
+): MediaListEntryEntity =
     MediaListEntryEntity(
         mediaType = node.mediaType.name,
         malId = node.id,
@@ -92,4 +95,5 @@ fun MediaListEntry.toEntity(pendingSync: Boolean = false): MediaListEntryEntity 
         comments = listStatus.comments,
         updatedAt = listStatus.updatedAt,
         pendingSync = pendingSync,
+        pendingDelete = pendingDelete,
     )

@@ -11,7 +11,7 @@ import com.myanitrack.core.database.entity.RemoteCacheEntity
 
 @Database(
     entities = [MediaListEntryEntity::class, RemoteCacheEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 @TypeConverters(RoomConverters::class)

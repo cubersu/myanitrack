@@ -19,6 +19,7 @@ import com.myanitrack.core.common.deeplink.DeepLinkTarget
 import com.myanitrack.core.model.MediaType
 import com.myanitrack.core.ui.ObserveAsEvents
 import com.myanitrack.feature.details.navigation.navigateToMediaDetails
+import com.myanitrack.feature.profile.navigation.navigateToUserProfile
 import com.myanitrack.navigation.AppNavHost
 import com.myanitrack.navigation.TopLevelDestination
 import com.myanitrack.navigation.isTopLevel
@@ -43,6 +44,8 @@ fun MyAniTrackApp(
                     ?: MediaType.ANIME
                 navController.navigateToMediaDetails(mediaType, target.malId)
             }
+
+            is DeepLinkTarget.Profile -> navController.navigateToUserProfile(target.userName)
         }
         viewModel.onDeepLinkHandled()
     }

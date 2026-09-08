@@ -21,5 +21,8 @@
     <string name="mylist_empty_title">Burada henuz bir sey yok</string>
     <string name="mylist_empty_description">Bu duruma ya da filtreye uyan kayit yok. MyAnimeList ile esitlemek icin asagi cekin.</string>
     <string name="mylist_entry_deleted">%1$s listenizden kaldirildi</string>
+    <string name="mylist_offline">Cevrimdisi - degisiklikler baglanti gelince gonderilecek</string>
+    <string name="mylist_pending_sync">%1$d degisiklik gonderilmeyi bekliyor</string>
+    <string name="mylist_offline_with_pending">Cevrimdisi - %1$d degisiklik gonderilmeyi bekliyor</string>
 
 </resources>

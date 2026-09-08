@@ -5,6 +5,7 @@ import com.myanitrack.core.common.result.AppResult
 import com.myanitrack.core.database.dao.MediaListDao
 import com.myanitrack.core.database.entity.MediaListEntryEntity
 import com.myanitrack.core.database.mapper.toEntity
+import com.myanitrack.core.domain.sync.PendingSyncScheduler
 import com.myanitrack.core.model.ListStatus
 import com.myanitrack.core.model.ListStatusUpdate
 import com.myanitrack.core.model.MediaListEntry
@@ -42,7 +43,9 @@ class MediaListRepositoryImplTest {
     private val dao = mockk<MediaListDao>(relaxUnitFun = true)
     private val dispatcher = StandardTestDispatcher()
 
-    private fun repository() = MediaListRepositoryImpl(api, dao, dispatcher)
+    private val scheduler = mockk<PendingSyncScheduler>(relaxUnitFun = true)
+
+    private fun repository() = MediaListRepositoryImpl(api, dao, scheduler, dispatcher)
 
     private fun httpException(code: Int) = HttpException(
         Response.error<Any>(code, "".toResponseBody("application/json".toMediaType())),
@@ -122,16 +125,18 @@ class MediaListRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("Guncelleme once yerelde uygulanir, hata olursa geri alinir")
-    fun `update reverts optimistic write on failure`() = runTest(dispatcher) {
+    @DisplayName("Guncelleme once yerelde uygulanir, KALICI hata olursa geri alinir")
+    fun `update reverts optimistic write on permanent failure`() = runTest(dispatcher) {
         val existing = localEntry(progress = 3).toEntity()
         coEvery { dao.getEntry("ANIME", 1) } returns existing
+        // 403 kalicidir: tekrar denemek duzeltmez, degisiklik geri alinmali.
+        // Gecici hatalarin kuyruga alinmasi OfflineQueueTest icinde test ediliyor.
         coEvery {
             api.updateAnimeListStatus(
                 any(), any(), any(), any(), any(), any(),
                 any(), any(), any(), any(), any(), any(),
             )
-        } throws IOException()
+        } throws httpException(403)
 
         val upserts = mutableListOf<MediaListEntryEntity>()
         coEvery { dao.upsert(capture(upserts)) } just Runs
@@ -180,15 +185,15 @@ class MediaListRepositoryImplTest {
 
         assertInstanceOf(AppResult.Success::class.java, result)
         coVerify(exactly = 1) { dao.delete("ANIME", 1) }
-        coVerify(exactly = 0) { dao.upsert(any()) }
     }
 
     @Test
-    @DisplayName("Silme sirasindaki ag hatasinda kayit geri yuklenir")
-    fun `delete restores entry on network failure`() = runTest(dispatcher) {
+    @DisplayName("Silme sirasindaki KALICI hatada kayit geri yuklenir")
+    fun `delete restores entry on permanent failure`() = runTest(dispatcher) {
         val existing = localEntry().toEntity()
         coEvery { dao.getEntry("ANIME", 1) } returns existing
-        coEvery { api.deleteAnimeListStatus(1) } throws IOException()
+        // Gecici hatada silme kuyruga alinir; o yol OfflineQueueTest icinde.
+        coEvery { api.deleteAnimeListStatus(1) } throws httpException(403)
 
         val result = repository().deleteEntry(MediaType.ANIME, 1)
 

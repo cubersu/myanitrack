@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -17,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.automirrored.outlined.Sort
@@ -29,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -160,6 +163,10 @@ internal fun MyListScreen(
                         onSelect = onTagChange,
                     )
                 }
+                OfflineBanner(
+                    isOffline = uiState.isOffline,
+                    pendingCount = uiState.pendingSyncCount,
+                )
             }
         },
     ) { padding ->
@@ -475,3 +482,43 @@ private fun statusTabLabel(status: ListStatus, isAnime: Boolean): String = strin
             if (isAnime) com.myanitrack.core.ui.R.string.status_plan_to_watch else com.myanitrack.core.ui.R.string.status_plan_to_read
     },
 )
+
+/**
+ * Cevrimdisi durumu ve bekleyen degisiklik sayisi.
+ *
+ * Bunlar hata degil bilgi: liste her zaman yerel veritabanindan okundugu icin
+ * cevrimdisi de tam olarak calisiyor, yapilan duzenlemeler de kaybolmuyor.
+ * Serit yalnizca "su an sunucuya yazamiyoruz" demek icin var; ikisi de yoksa
+ * hicbir sey cizilmez.
+ */
+@Composable
+private fun OfflineBanner(isOffline: Boolean, pendingCount: Int) {
+    if (!isOffline && pendingCount == 0) return
+
+    val message = when {
+        isOffline && pendingCount > 0 ->
+            stringResource(R.string.mylist_offline_with_pending, pendingCount)
+
+        isOffline -> stringResource(R.string.mylist_offline)
+        else -> stringResource(R.string.mylist_pending_sync, pendingCount)
+    }
+
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.CloudOff,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(text = message, style = MaterialTheme.typography.labelMedium)
+        }
+    }
+}

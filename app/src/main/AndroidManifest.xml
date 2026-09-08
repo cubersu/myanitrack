@@ -41,6 +41,23 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="myanitrack" />
             </intent-filter>
+
+            <!--
+              MAL adreslerini uygulamada acabilme. autoVerify kullanilmiyor cunku
+              alan adi bize ait degil; Android bir secim penceresi gosterir ve
+              kullanici isterse MyAniTrack-i secer.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="myanimelist.net" android:pathPrefix="/anime/" />
+                <data android:scheme="https" android:host="myanimelist.net" android:pathPrefix="/manga/" />
+                <data android:scheme="https" android:host="myanimelist.net" android:pathPrefix="/profile/" />
+                <data android:scheme="https" android:host="www.myanimelist.net" android:pathPrefix="/anime/" />
+                <data android:scheme="https" android:host="www.myanimelist.net" android:pathPrefix="/manga/" />
+                <data android:scheme="https" android:host="www.myanimelist.net" android:pathPrefix="/profile/" />
+            </intent-filter>
         </activity>
 
         <!--

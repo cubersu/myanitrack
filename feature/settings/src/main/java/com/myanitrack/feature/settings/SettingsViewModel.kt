@@ -3,6 +3,7 @@ package com.myanitrack.feature.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.myanitrack.core.domain.repository.AuthRepository
+import com.myanitrack.core.domain.repository.CacheRepository
 import com.myanitrack.core.domain.repository.UserPreferencesRepository
 import com.myanitrack.core.domain.schedule.AiringSyncScheduler
 import com.myanitrack.core.model.AuthState
@@ -12,6 +13,7 @@ import com.myanitrack.core.model.ThemeMode
 import com.myanitrack.core.model.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -21,6 +23,8 @@ import kotlinx.coroutines.launch
 data class SettingsUiState(
     val preferences: UserPreferences = UserPreferences(),
     val userName: String? = null,
+    /** Jikan yanit onbelleginin yaklasik boyutu (bayt). */
+    val cacheSizeBytes: Long = 0L,
 )
 
 @HiltViewModel
@@ -28,15 +32,20 @@ class SettingsViewModel @Inject constructor(
     private val preferencesRepository: UserPreferencesRepository,
     private val authRepository: AuthRepository,
     private val airingSyncScheduler: AiringSyncScheduler,
+    private val cacheRepository: CacheRepository,
 ) : ViewModel() {
+
+    private val cacheSize = MutableStateFlow(0L)
 
     val uiState: StateFlow<SettingsUiState> = combine(
         preferencesRepository.preferences,
         authRepository.authState,
-    ) { prefs, auth ->
+        cacheSize,
+    ) { prefs, auth, size ->
         SettingsUiState(
             preferences = prefs,
             userName = (auth as? AuthState.LoggedIn)?.userName,
+            cacheSizeBytes = size,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -75,6 +84,27 @@ class SettingsViewModel @Inject constructor(
             notificationsEnabled = uiState.value.preferences.airingNotificationsEnabled,
             onlyOnWifi = enabled,
         )
+    }
+
+    init {
+        refreshCacheSize()
+    }
+
+    /**
+     * Onbellegi temizler.
+     *
+     * Kullanicinin listesi silinmez - o onbellek degil, cevrimdisi calismanin
+     * temeli. Yalnizca Jikan yanitlari ve haber beslemesi gider.
+     */
+    fun clearCache() {
+        viewModelScope.launch {
+            cacheRepository.clear()
+            refreshCacheSize()
+        }
+    }
+
+    private fun refreshCacheSize() {
+        viewModelScope.launch { cacheSize.value = cacheRepository.approximateSizeBytes() }
     }
 
     /** Cikis: token silinir, sifreleme anahtari yok edilir. */

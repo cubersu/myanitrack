@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 
 /** Uygulama icinde acilacak hedef. */
 sealed interface DeepLinkTarget {
+
     data class Media(val mediaTypeName: String, val malId: Int) : DeepLinkTarget
+
+    data class Profile(val userName: String) : DeepLinkTarget
 }
 
 /**

@@ -2,6 +2,7 @@ package com.myanitrack.feature.mylist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.myanitrack.core.common.network.NetworkMonitor
 import com.myanitrack.core.common.result.AppError
 import com.myanitrack.core.common.result.AppResult
 import com.myanitrack.core.domain.repository.MediaListRepository
@@ -46,6 +47,8 @@ data class MyListUiState(
     val isRefreshing: Boolean = false,
     val isSearchActive: Boolean = false,
     val editingEntry: MediaListEntry? = null,
+    val isOffline: Boolean = false,
+    val pendingSyncCount: Int = 0,
     val error: AppError? = null,
 ) {
     val isEmpty: Boolean get() = entries.isEmpty() && !isInitialLoading
@@ -65,6 +68,7 @@ class MyListViewModel @Inject constructor(
     private val incrementProgressUseCase: IncrementProgressUseCase,
     private val listRepository: MediaListRepository,
     private val preferencesRepository: UserPreferencesRepository,
+    networkMonitor: NetworkMonitor,
 ) : ViewModel() {
 
     private val mediaType = MutableStateFlow(MediaType.ANIME)
@@ -73,6 +77,15 @@ class MyListViewModel @Inject constructor(
     private val screenFilter = MutableStateFlow(ListFilter())
 
     private val transient = MutableStateFlow(TransientState())
+
+    /**
+     * Cevrimdisi durumu ve gonderilmeyi bekleyen degisiklik sayisi.
+     * Ikisi de yalnizca bilgilendirme amacli; liste her durumda yerelden okunuyor.
+     */
+    private val connectivity = combine(
+        networkMonitor.isOnline,
+        listRepository.observePendingSyncCount(),
+    ) { isOnline, pending -> Connectivity(isOffline = !isOnline, pendingCount = pending) }
 
     private val effectiveFilter: StateFlow<ListFilter> =
         combine(screenFilter, preferencesRepository.preferences) { filter, prefs ->
@@ -95,13 +108,26 @@ class MyListViewModel @Inject constructor(
             ) { entries, counts, tags -> ListData(entries, counts, tags) }
         }
 
+    /**
+     * Ekrana ozel durumlar tek nesnede toplandi: `combine` yalnizca bes akisa
+     * kadar tipli asiri yuklemeye sahip, altisinda `Array<Any>` fallback-ine
+     * dusup tip guvenligini kaybediyor.
+     */
+    private val screenState = combine(
+        transient,
+        connectivity,
+        preferencesRepository.preferences.map { it.listViewMode }.distinctUntilChanged(),
+    ) { flags, connection, viewMode -> ScreenState(flags, connection, viewMode) }
+
     val uiState: StateFlow<MyListUiState> = combine(
         mediaType,
         effectiveFilter,
         listData,
-        preferencesRepository.preferences.map { it.listViewMode }.distinctUntilChanged(),
-        transient,
-    ) { type, filter, data, viewMode, flags ->
+        screenState,
+    ) { type, filter, data, screen ->
+        val flags = screen.flags
+        val connection = screen.connectivity
+        val viewMode = screen.viewMode
         MyListUiState(
             mediaType = type,
             filter = filter,
@@ -113,6 +139,8 @@ class MyListViewModel @Inject constructor(
             isRefreshing = flags.isRefreshing,
             isSearchActive = flags.isSearchActive,
             editingEntry = flags.editingEntry,
+            isOffline = connection.isOffline,
+            pendingSyncCount = connection.pendingCount,
             error = flags.error,
         )
     }.stateIn(
@@ -232,6 +260,14 @@ class MyListViewModel @Inject constructor(
         _events.send(MyListEvent.ShowError(error))
         transient.update { it.copy(error = null) }
     }
+
+    private data class Connectivity(val isOffline: Boolean, val pendingCount: Int)
+
+    private data class ScreenState(
+        val flags: TransientState,
+        val connectivity: Connectivity,
+        val viewMode: ListViewMode,
+    )
 
     private data class ListData(
         val entries: List<MediaListEntry>,

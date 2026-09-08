@@ -1,6 +1,7 @@
 package com.myanitrack.core.data.di
 
 import com.myanitrack.core.data.auth.AuthRepositoryImpl
+import com.myanitrack.core.data.cache.CacheRepositoryImpl
 import com.myanitrack.core.data.details.MediaDetailsRepositoryImpl
 import com.myanitrack.core.data.discover.DiscoverRepositoryImpl
 import com.myanitrack.core.data.list.MediaListRepositoryImpl
@@ -10,6 +11,7 @@ import com.myanitrack.core.data.profile.ProfileRepositoryImpl
 import com.myanitrack.core.data.schedule.ScheduleRepositoryImpl
 import com.myanitrack.core.data.user.UserRepositoryImpl
 import com.myanitrack.core.domain.repository.AuthRepository
+import com.myanitrack.core.domain.repository.CacheRepository
 import com.myanitrack.core.domain.repository.DiscoverRepository
 import com.myanitrack.core.domain.repository.MediaDetailsRepository
 import com.myanitrack.core.domain.repository.MediaListRepository
@@ -57,6 +59,10 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindsProfileRepository(impl: ProfileRepositoryImpl): ProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindsCacheRepository(impl: CacheRepositoryImpl): CacheRepository
 
     @Binds
     @Singleton

@@ -24,6 +24,10 @@
     <string name="settings_airing_notifications">Airing reminders</string>
     <string name="settings_airing_notifications_summary">Notify before the next episode airs</string>
 
+    <string name="settings_section_storage">Storage</string>
+    <string name="settings_clear_cache">Clear cached data</string>
+    <string name="settings_clear_cache_summary">About %1$d KB of Jikan responses and news. Your lists are not affected.</string>
+
     <string name="settings_section_account">Account</string>
     <string name="settings_logout">Sign out</string>
     <string name="settings_logout_confirm">Your token and cached lists will be removed from this device.</string>

@@ -1,4 +1,4 @@
-# MyAniTrack
+| **WebView** (Faz 5) | Forum, özel mesajlar, profil yorumları — API yok | Kullanıcı sitede |# MyAniTrack
 
 MyAnimeList için modern, native bir Android istemcisi — Google Play'den kaldırılan
 [MALClient](https://github.com/Drutol/MALClient) (Xamarin/C#, UWP+Android) uygulamasının
@@ -19,7 +19,7 @@ mümkün olan her yerde **resmî ve stabil API'leri** kullanır; scraping gerekt
 | 3 | Yayın takvimi + geri sayım bildirimleri, haberler | ✅ Tamamlandı |
 | 4 | Profil sayfaları, RSS arkadaş akışı, geçmiş | ✅ Tamamlandı |
 | 5 | Forum ve mesajlaşma (WebView — Seçenek A) | ✅ Tamamlandı |
-| 6 | Ayarlar cilası, deep link, animasyonlar, offline mod | ⬜ Sırada |
+| 6 | Ayarlar cilası, deep link, animasyonlar, offline mod | ✅ Tamamlandı |
 
 ---
 
@@ -319,23 +319,69 @@ mimarimizde mümkün değil** ve bu bir eksiklik değil, bilinçli tercihin sonu
 
 ---
 
+## Faz 6'da neler var
+
+**Çevrimdışı düzenleme kuyruğu** — Faz 6'nın asıl işi
+- Ağ yokken yapılan değişiklik artık **geri alınmıyor**: yerelde `pendingSync` ile
+  işaretlenip korunuyor, bağlantı gelince WorkManager tarafından MAL'a gönderiliyor
+- Silme de kuyruğa girebiliyor (`pendingDelete`): kayıt listeden hemen kayboluyor,
+  gönderim sonra yapılıyor
+- **Geçici / kalıcı hata ayrımı tek yerde** (`AppError.isTransient`):
+  ağ yok / 5xx / 429 → kuyruğa al; 401 / 403 / 404 / biçim hatası → geri al + hata göster.
+  Tekrar denemekle düzelmeyecek bir hatayı kuyrukta tutmak kuyruğu tıkardı.
+- Satırın kendisi istenen son durum; ayrı "işlem günlüğü" yok. Aynı kayda arka arkaya
+  yapılan değişiklikler kendiliğinden birleşiyor.
+- Tam senkronizasyon (`replaceAll`) bekleyen yerel değişiklikleri **koruyor** — aksi
+  halde arka plandaki bir tazeleme çevrimdışı yapılan düzenlemeyi sessizce silerdi
+- Kalıcı hatada bayrak temizleniyor ki kuyruk sonsuza kadar dolu kalmasın
+
+**Çevrimdışı göstergesi**
+- `NetworkMonitor`: "bağlantı var" değil "internete çıkabiliyor" ölçüyor
+  (`NET_CAPABILITY_VALIDATED`), böylece captive portal'a takılmış Wi-Fi çevrimdışı sayılıyor
+- Liste ekranında şerit: "Çevrimdışı — değişiklikler bağlantı gelince gönderilecek"
+  ve bekleyen değişiklik sayısı. Hata değil bilgi; liste zaten tamamen çalışıyor.
+
+**Deep link tamamlandı**
+- `myanitrack://anime/5114`, `myanitrack://manga/2/Berserk`, `myanitrack://profile/<kullanıcı>`
+- Orijinal `malclient://<mal-link>` deseni: `myanitrack://myanimelist.net/anime/5114/X`
+- `https://myanimelist.net/anime|manga|profile/...` — başka uygulamalardan paylaşılan
+  MAL adresleri uygulamada açılabiliyor (`autoVerify` yok: alan adı bize ait değil,
+  Android seçim penceresi gösteriyor)
+- Ayrıştırma `android.net.Uri` yerine saf bir fonksiyonda → 22 test, benzer alan adları dahil
+
+**Ayarlarda önbellek yönetimi**
+- Önbellek boyutu gösteriliyor, tek dokunuşla temizleniyor
+- **Kullanıcının listesi silinmiyor** — o önbellek değil, çevrimdışı çalışmanın temeli.
+  Yalnızca Jikan yanıtları ve haber beslemesi gidiyor.
+
+**Animasyonlar**
+- İç ekranlar (detay, profil, WebView) yandan kayarak açılıyor, geri dönüşte tersi
+- Sekmeler arası geçiş yalnızca soluklaşıyor: sekme değiştirmek hiyerarşide ilerlemek
+  değil yer değiştirmek; yatay kayma yanlış bir derinlik hissi verirdi
+
+---
+
 ## Bilinen sınırlar
 
 - **Forum/mesajlar için MAL sitesine ayrı giriş gerekiyor** (yukarıdaki mimari not).
-  Bu kalıcı bir sonuç, sonraki fazlarda değişmeyecek.
+  Bu kalıcı bir sonuç.
 - **Arkadaş akışı 15 arkadaşla sınırlı** (yukarıdaki gerekçe). Sınır tek sabitte,
   gerekirse artırılabilir.
-- **Favoriler sekmesi yok.** Jikan `/users/{u}/favorites` ucu var ama Faz 4 kapsamına
-  alınmadı; profil zaten dört sekme.
-- **Stüdyo bazlı gezinme henüz yok.** Jikan `producers` parametresi servis katmanında
+- **Favoriler sekmesi yok.** Jikan `/users/{u}/favorites` ucu var ama profil zaten
+  dört sekme; kapsam dışı bırakıldı.
+- **Stüdyo bazlı gezinme yok.** Jikan `producers` parametresi servis katmanında
   hazır ama Keşfet ekranında yalnızca tür filtresi açık.
-- **Çevrimdışı düzenleme kuyruğu yok.** Ağ yokken yapılan değişiklik geri alınır ve
-  hata gösterilir. `pendingSync` alanı ve DAO sorgusu bu iş için hazır bekliyor (Faz 6).
+- **Çakışma çözümü "son yazan kazanır".** Aynı kaydı hem çevrimdışıyken burada hem
+  başka bir istemcide değiştirirsen, kuyruk gönderildiğinde bizimki üste yazar.
+  Alan bazlı birleştirme yapılmıyor.
 - **Geri sayım MAL'ın yayın bilgisine güvenir.** MAL bir yapımın `broadcast` alanını
   boş bırakırsa geri sayım gösterilemez — uydurma tahmin yapılmıyor.
 - **Bildirim zamanlaması ±birkaç dakika sapabilir** (WorkManager'ın doğası). Tam
   zamanlı alarm bilinçli olarak tercih edilmedi.
 - **Manga incelemeleri Jikan'da anime kadar zengin değil**; bazı başlıklarda boş gelebilir.
+- **Enstrümantasyon testi yok.** 229 birim testi var; Compose UI testleri ve Room
+  migration testleri yazılmadı. Şema önbellek olduğu için `fallbackToDestructiveMigration`
+  kullanılıyor, migration yazılmıyor.
 
 ---
 

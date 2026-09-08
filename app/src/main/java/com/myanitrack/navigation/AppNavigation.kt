@@ -1,5 +1,11 @@
 package com.myanitrack.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Explore
@@ -119,6 +125,31 @@ fun AppNavHost(
         navController = navController,
         startDestination = MyListDestination,
         modifier = modifier,
+        // Detay/profil gibi ic ekranlar yandan kayar, geri donus tersine calisir.
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(NAV_ANIMATION_MS),
+            ) + fadeIn(tween(NAV_ANIMATION_MS))
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(NAV_ANIMATION_MS),
+            ) + fadeOut(tween(NAV_ANIMATION_MS))
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(NAV_ANIMATION_MS),
+            ) + fadeIn(tween(NAV_ANIMATION_MS))
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(NAV_ANIMATION_MS),
+            ) + fadeOut(tween(NAV_ANIMATION_MS))
+        },
     ) {
         mainGraph(
             onBack = { navController.popBackStack() },
@@ -141,11 +172,12 @@ private fun NavGraphBuilder.mainGraph(
     onOpenMessages: () -> Unit,
     onOpenComments: (Int) -> Unit,
 ) {
-    composable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia) }
-    composable<BrowseDestination> { BrowseRoute(onOpenMedia = onOpenMedia) }
-    composable<CalendarDestination> { CalendarRoute(onOpenMedia = onOpenMedia) }
-    composable<NewsDestination> { NewsRoute() }
-    composable<ProfileDestination> {
+    // Sekmeler arasi gecis kaymamali: kullanici hiyerarside ilerlemiyor, yer degistiriyor.
+    topLevelComposable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia) }
+    topLevelComposable<BrowseDestination> { BrowseRoute(onOpenMedia = onOpenMedia) }
+    topLevelComposable<CalendarDestination> { CalendarRoute(onOpenMedia = onOpenMedia) }
+    topLevelComposable<NewsDestination> { NewsRoute() }
+    topLevelComposable<ProfileDestination> {
         // Sekmeden acilan kendi profilimiz: geri dugmesi yok, ayarlar buradan aciliyor.
         ProfileRoute(
             onOpenMedia = onOpenMedia,
@@ -165,3 +197,24 @@ private fun NavGraphBuilder.mainGraph(
     messagingScreen(onBack = onBack)
     profileCommentsScreen(onBack = onBack)
 }
+
+/**
+ * Alt cubuk sekmeleri icin gecis: yalnizca soluklasma.
+ *
+ * Sekme degistirmek hiyerarside ilerlemek degil yer degistirmektir; yatay kayma
+ * yanlis bir "derinlik" hissi verirdi. Detay/profil gibi ic ekranlar
+ * [AppNavHost] icindeki varsayilan kayma gecisini kullanmaya devam eder.
+ */
+private inline fun <reified T : Any> NavGraphBuilder.topLevelComposable(
+    noinline content: @Composable androidx.compose.animation.AnimatedContentScope.(androidx.navigation.NavBackStackEntry) -> Unit,
+) {
+    composable<T>(
+        enterTransition = { fadeIn(tween(NAV_ANIMATION_MS)) },
+        exitTransition = { fadeOut(tween(NAV_ANIMATION_MS)) },
+        popEnterTransition = { fadeIn(tween(NAV_ANIMATION_MS)) },
+        popExitTransition = { fadeOut(tween(NAV_ANIMATION_MS)) },
+        content = content,
+    )
+}
+
+private const val NAV_ANIMATION_MS = 280

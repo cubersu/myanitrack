@@ -62,8 +62,18 @@ data class MediaListEntryEntity(
     val updatedAt: Instant?,
 
     /**
-     * Yerelde degisip henuz MAL-e gonderilemeyen kayit. Cevrimdisi duzenlemede
-     * true olur, senkronizasyon basarili olunca temizlenir.
+     * Yerelde degisip henuz MAL-e gonderilemeyen kayit.
+     *
+     * Cevrimdisi (ya da gecici sunucu hatasi sirasinda) yapilan duzenlemede true
+     * olur. Bu satirin KENDISI istenen son durumdur; senkronizasyon isi alanlari
+     * oldugu gibi MAL-e gonderir. Ayri bir "islem gunlugu" tutmuyoruz cunku ayni
+     * kayda arka arkaya yapilan degisikliklerin birlestirilmesi kendiliginden olur.
      */
     val pendingSync: Boolean = false,
+
+    /**
+     * Yerelde silinmis ama MAL-e henuz bildirilememis kayit.
+     * Listelerde gizlenir; senkronizasyon basarili olunca satir tumden silinir.
+     */
+    val pendingDelete: Boolean = false,
 )

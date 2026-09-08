@@ -1,6 +1,7 @@
 package com.myanitrack.feature.mylist
 
 import app.cash.turbine.test
+import com.myanitrack.core.common.network.NetworkMonitor
 import com.myanitrack.core.common.result.AppError
 import com.myanitrack.core.common.result.AppResult
 import com.myanitrack.core.domain.repository.MediaListRepository
@@ -48,6 +49,8 @@ class MyListViewModelTest {
     private val listRepository = mockk<MediaListRepository>(relaxed = true)
     private val preferencesRepository = mockk<UserPreferencesRepository>(relaxed = true)
     private val entriesFlow = MutableStateFlow(listOf(entry(1, progress = 3)))
+    private val networkMonitor = mockk<NetworkMonitor>()
+    private val isOnline = MutableStateFlow(true)
 
     private fun entry(id: Int, progress: Int = 0, total: Int? = 12) = MediaListEntry(
         node = MediaNode(
@@ -67,6 +70,8 @@ class MyListViewModelTest {
             flowOf(mapOf(ListStatus.WATCHING to 1))
         every { listRepository.observeTags(any()) } returns flowOf(listOf("favorite"))
         coEvery { listRepository.refresh(any()) } returns AppResult.Success(Unit)
+        every { listRepository.observePendingSyncCount() } returns MutableStateFlow(0)
+        every { networkMonitor.isOnline } returns isOnline
     }
 
     private fun viewModel() = MyListViewModel(
@@ -76,6 +81,7 @@ class MyListViewModelTest {
         incrementProgressUseCase = IncrementProgressUseCase(UpdateListEntryUseCase(listRepository)),
         listRepository = listRepository,
         preferencesRepository = preferencesRepository,
+        networkMonitor = networkMonitor,
     )
 
     @Test
@@ -223,6 +229,22 @@ class MyListViewModelTest {
         vm.uiState.test {
             advanceUntilIdle()
             assertFalse(expectMostRecentItem().filter.hideNsfw)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    @DisplayName("Cevrimdisi durumu ve bekleyen degisiklik sayisi duruma yansir")
+    fun `reports offline and pending state`() = runTest {
+        every { listRepository.observePendingSyncCount() } returns MutableStateFlow(2)
+        isOnline.value = false
+
+        val vm = viewModel()
+        vm.uiState.test {
+            advanceUntilIdle()
+            val state = expectMostRecentItem()
+            assertTrue(state.isOffline)
+            assertEquals(2, state.pendingSyncCount)
             cancelAndIgnoreRemainingEvents()
         }
     }

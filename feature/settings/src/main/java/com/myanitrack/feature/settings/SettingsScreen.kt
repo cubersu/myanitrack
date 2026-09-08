@@ -48,6 +48,7 @@ fun SettingsRoute(
         onHideNsfwChange = viewModel::setHideNsfw,
         onAiringNotificationsChange = viewModel::setAiringNotifications,
         onLogout = viewModel::logout,
+        onClearCache = viewModel::clearCache,
         modifier = modifier,
     )
 }
@@ -63,6 +64,7 @@ internal fun SettingsScreen(
     onHideNsfwChange: (Boolean) -> Unit,
     onAiringNotificationsChange: (Boolean) -> Unit,
     onLogout: () -> Unit,
+    onClearCache: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var confirmLogout by remember { mutableStateOf(false) }
@@ -138,6 +140,28 @@ internal fun SettingsScreen(
                 checked = prefs.airingNotificationsEnabled,
                 onCheckedChange = onAiringNotificationsChange,
             )
+
+            HorizontalDivider()
+            SectionHeader(stringResource(R.string.settings_section_storage))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onClearCache)
+                    .padding(16.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_clear_cache),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.settings_clear_cache_summary,
+                        uiState.cacheSizeBytes / 1024,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
             HorizontalDivider()
             SectionHeader(stringResource(R.string.settings_section_account))

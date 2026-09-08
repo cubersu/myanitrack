@@ -22,6 +22,10 @@
     <string name="settings_airing_notifications">Yayin hatirlatmalari</string>
     <string name="settings_airing_notifications_summary">Yeni bolum yayinlanmadan once bildir</string>
 
+    <string name="settings_section_storage">Depolama</string>
+    <string name="settings_clear_cache">Onbellegi temizle</string>
+    <string name="settings_clear_cache_summary">Yaklasik %1$d KB Jikan yaniti ve haber. Listeleriniz etkilenmez.</string>
+
     <string name="settings_section_account">Hesap</string>
     <string name="settings_logout">Cikis yap</string>
     <string name="settings_logout_confirm">Token-iniz ve onbellekteki listeler bu cihazdan silinecek.</string>

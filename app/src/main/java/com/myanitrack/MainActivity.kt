@@ -2,7 +2,6 @@ package com.myanitrack
 
 import android.Manifest
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,10 +17,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.myanitrack.core.common.auth.AuthRedirectBus
 import com.myanitrack.core.common.deeplink.DeepLinkBus
+import com.myanitrack.core.common.deeplink.DeepLinkParser
 import com.myanitrack.core.common.deeplink.DeepLinkTarget
 import com.myanitrack.core.designsystem.theme.MyAniTrackTheme
 import com.myanitrack.core.model.AuthState
-import com.myanitrack.core.model.MediaType
 import com.myanitrack.core.model.ThemeMode
 import com.myanitrack.feature.auth.LoginRoute
 import com.myanitrack.notification.AiringNotifier
@@ -108,32 +107,27 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * `myanitrack://` semasindaki baglantilari ayristirir.
+     * Gelen baglantilari isler.
      *
      * - `myanitrack://auth?code=...` - OAuth donusu (giris ekranina)
-     * - `myanitrack://anime/<id>`, `myanitrack://manga/<id>` - detay sayfasi
-     *   (yayin bildirimlerine dokunuldugunda kullanilir)
+     * - `myanitrack://anime/<id>`, `myanitrack://profile/<kullanici>` vb.
+     * - `https://myanimelist.net/...` - baska uygulamalardan paylasilan MAL adresleri
+     *
+     * Ayristirma [DeepLinkParser] icinde; burada yalnizca OAuth ozel durumu var.
      */
     private fun handleIntent(intent: Intent?) {
         val data = intent?.data ?: return
-        if (data.scheme != APP_SCHEME) return
 
-        when (data.host) {
-            AUTH_HOST -> authRedirectBus.publish(data.toString())
-            HOST_ANIME -> data.publishMedia(MediaType.ANIME)
-            HOST_MANGA -> data.publishMedia(MediaType.MANGA)
+        if (data.scheme == APP_SCHEME && data.host == AUTH_HOST) {
+            authRedirectBus.publish(data.toString())
+            return
         }
-    }
 
-    private fun Uri.publishMedia(mediaType: MediaType) {
-        val malId = pathSegments.firstOrNull()?.toIntOrNull() ?: return
-        deepLinkBus.publish(DeepLinkTarget.Media(mediaType.name, malId))
+        DeepLinkParser.parse(data.toString())?.let(deepLinkBus::publish)
     }
 
     private companion object {
         const val APP_SCHEME = "myanitrack"
         const val AUTH_HOST = "auth"
-        const val HOST_ANIME = "anime"
-        const val HOST_MANGA = "manga"
     }
 }

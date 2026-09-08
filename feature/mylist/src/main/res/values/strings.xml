@@ -23,5 +23,8 @@
     <string name="mylist_empty_title">Nothing here yet</string>
     <string name="mylist_empty_description">No entries match this status or filter. Pull down to sync with MyAnimeList.</string>
     <string name="mylist_entry_deleted">Removed %1$s from your list</string>
+    <string name="mylist_offline">Offline - changes will sync when you reconnect</string>
+    <string name="mylist_pending_sync">%1$d change(s) waiting to sync</string>
+    <string name="mylist_offline_with_pending">Offline - %1$d change(s) waiting to sync</string>
 
 </resources>

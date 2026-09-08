@@ -26,6 +26,15 @@ interface MediaListRepository {
     /** Her durum icin kac kayit oldugu (sekme rozetleri). */
     fun observeStatusCounts(mediaType: MediaType): Flow<Map<com.myanitrack.core.model.ListStatus, Int>>
 
+    /**
+     * MAL-e gonderilmeyi bekleyen yerel degisiklik sayisi.
+     * Cevrimdisi yapilan duzenlemeler burada gorunur.
+     */
+    fun observePendingSyncCount(): Flow<Int>
+
+    /** Bekleyen degisiklikleri MAL-e gonderir; senkronizasyon isi bunu cagirir. */
+    suspend fun syncPendingChanges(): AppResult<Unit>
+
     suspend fun refresh(mediaType: MediaType): AppResult<Unit>
 
     suspend fun updateEntry(
