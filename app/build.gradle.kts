@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -7,6 +8,13 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+val signingProperties = Properties().apply {
+    rootProject.file("release-signing.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+fun signingValue(key: String, environment: String): String? =
+    providers.environmentVariable(environment).orNull ?: signingProperties.getProperty(key)
+val uploadStore = signingValue("storeFile", "MYANITRACK_KEYSTORE")
 
 android {
     namespace = "com.myanitrack"
@@ -17,13 +25,24 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (!uploadStore.isNullOrBlank()) {
+            create("upload") {
+                storeFile = rootProject.file(uploadStore)
+                storePassword = signingValue("storePassword", "MYANITRACK_STORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "MYANITRACK_KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "MYANITRACK_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("upload")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -55,6 +74,16 @@ android {
     }
 }
 
+tasks.register("exportReleaseDependencies") {
+    doLast {
+        val artifacts = configurations.getByName("releaseRuntimeClasspath").incoming.resolutionResult.allComponents
+            .filter { it.id is org.gradle.api.artifacts.component.ModuleComponentIdentifier }.mapNotNull { it.moduleVersion }
+        val output = layout.buildDirectory.file("reports/release-dependencies.tsv").get().asFile
+        output.parentFile.mkdirs()
+        output.writeText(artifacts.map { "${it.group}\t${it.name}\t${it.version}" }.distinct().sorted().joinToString("\n"))
+    }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
@@ -62,6 +91,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.androidx.appcompat)
     implementation(project(":core:common"))
     implementation(project(":core:model"))
     implementation(project(":core:domain"))

@@ -143,6 +143,8 @@ object NetworkModule {
         retryInterceptor: JikanRetryInterceptor,
         rateLimitInterceptor: JikanRateLimitInterceptor,
     ): OkHttpClient = baseClient.newBuilder()
+        .readTimeout(Duration.ofSeconds(10))
+        .callTimeout(Duration.ofSeconds(25))
         .addInterceptor(circuitBreakerInterceptor)
         .addInterceptor(retryInterceptor)
         .addInterceptor(rateLimitInterceptor)
@@ -176,6 +178,15 @@ object NetworkModule {
         .create(MalRssService::class.java)
 
     private const val CONNECT_TIMEOUT_SECONDS = 20L
+    @Provides
+    @Singleton
+    fun providesMalWebService(@UnauthenticatedClient client: OkHttpClient): com.myanitrack.core.network.mal.MalWebService = Retrofit.Builder()
+        .baseUrl(BuildConfig.MAL_WEB_BASE_URL)
+        .client(client.newBuilder().callTimeout(Duration.ofSeconds(15)).retryOnConnectionFailure(false).build())
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .build()
+        .create(com.myanitrack.core.network.mal.MalWebService::class.java)
+
     private const val READ_TIMEOUT_SECONDS = 30L
     private const val JSON_MEDIA_TYPE = "application/json"
 }

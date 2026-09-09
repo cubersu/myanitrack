@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="cab269d9-e007-4323-a70f-f13c2e5ec275" />
+    <option name="activeSessionId" value="d6a59287-be27-4f4b-bf4f-be9fc0ffad53" />
     <option name="openSessionIds">
       <list>
         <option value="cab269d9-e007-4323-a70f-f13c2e5ec275" />
+        <option value="d6a59287-be27-4f4b-bf4f-be9fc0ffad53" />
       </list>
     </option>
     <option name="sessionPaths">
       <map>
         <entry key="cab269d9-e007-4323-a70f-f13c2e5ec275" value="/sessions/689c67d9-b2f8-4e08-92af-5a83e5385d8f" />
+        <entry key="d6a59287-be27-4f4b-bf4f-be9fc0ffad53" value="/sessions/689c67d9-b2f8-4e08-92af-5a83e5385d8f" />
       </map>
     </option>
     <option name="sessionTitles">
       <map>
-        <entry key="cab269d9-e007-4323-a70f-f13c2e5ec275" value="No title" />
+        <entry key="cab269d9-e007-4323-a70f-f13c2e5ec275" value="$USER_HOME$/Downloads/malclient-android-claude-c" />
+        <entry key="d6a59287-be27-4f4b-bf4f-be9fc0ffad53" value="$USER_HOME$/Downloads/malclient-android-claude-c" />
       </map>
     </option>
   </component>

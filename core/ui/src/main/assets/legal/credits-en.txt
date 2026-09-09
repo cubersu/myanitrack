@@ -1,0 +1,20 @@
+MyAniTrack 1.0.0
+Developer: TairyFail
+Support: tairyfailsupport@gmail.com
+
+An independent anime and manga tracker for MyAnimeList. This is not the official MyAnimeList app and is not affiliated with or endorsed by MyAnimeList.
+
+Data and content
+MyAnimeList — account connection, lists, title information, released episodes and RSS content.
+https://myanimelist.net/
+Jikan — independent API providing additional anime/manga information.
+https://jikan.moe/
+Covers, character artwork, text and trademarks belong to their respective rights holders. Attribution does not replace permission where permission is required.
+
+Inspiration
+Thanks to Drutol and the MALClient contributors for their anime/manga tracking workflows and features.
+https://github.com/Drutol/MALClient
+MALClient is licensed under GPL-3.0. This acknowledgement does not imply endorsement or partnership.
+
+Technology
+Thanks to the contributors to Android and AndroidX / Jetpack Compose, Kotlin and kotlinx, Dagger/Hilt, Retrofit, OkHttp, Okio, Coil and jsoup. Distributed dependencies and license texts are listed under “Open-source licenses”.

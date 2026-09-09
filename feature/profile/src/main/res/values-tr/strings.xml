@@ -1,42 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="genre_fantasy">Fantastik</string>
+    <string name="genre_action">Aksiyon</string>
+    <string name="genre_adventure">Macera</string>
+    <string name="genre_comedy">Komedi</string>
+    <string name="genre_romance">Romantik</string>
+    <string name="genre_drama">Dram</string>
+    <string name="genre_mystery">Gizem</string>
+    <string name="genre_scifi">Bilim kurgu</string>
+    <string name="profile_score_distribution">Anime puanların</string>
+    <string name="profile_score_hint">Eşitlenen listende %1$d puanlı · %2$d puansız kayıt</string>
+    <string name="profile_genres">En çok izlediğin türler</string>
+    <string name="profile_genres_hint">Başladığın veya tamamladığın animeler. Bir yapım birden fazla türe ait olabilir.</string>
+    <string name="profile_insights_empty">Tür bilgisi henüz mevcut değil.</string>
     <string name="profile_title">Profil</string>
     <string name="profile_back">Geri</string>
-    <string name="profile_open_on_mal">MyAnimeList-te ac</string>
+    <string name="profile_open_on_mal">MyAnimeList üzerinde aç</string>
     <string name="profile_settings">Ayarlar</string>
-    <string name="profile_comments_title">Profil yorumlari</string>
+    <string name="profile_comments_title">Profil yorumları</string>
     <string name="profile_more">Daha fazla</string>
     <string name="profile_menu_forum">Forum</string>
     <string name="profile_menu_messages">Mesajlar</string>
-    <string name="profile_menu_comments">Profil yorumlari</string>
-    <string name="profile_signed_out_title">Giris yapilmadi</string>
-    <string name="profile_signed_out_description">MyAnimeList profilinizi gormek icin giris yapin.</string>
-    <string name="profile_unavailable_title">Bu profil yuklenemedi</string>
+    <string name="profile_menu_comments">Profil yorumları</string>
+    <string name="profile_signed_out_title">Giriş yapılmadı</string>
+    <string name="profile_signed_out_description">MyAnimeList profilinizi görmek için giriş yapın.</string>
+    <string name="profile_unavailable_title">Bu profil yüklenemedi</string>
 
     <string name="profile_tab_overview">Genel</string>
-    <string name="profile_tab_history">Gecmis</string>
-    <string name="profile_tab_friends">Arkadaslar</string>
-    <string name="profile_tab_feed">Akis</string>
+    <string name="profile_tab_history">Geçmiş</string>
+    <string name="profile_tab_friends">Arkadaşlar</string>
+    <string name="profile_tab_feed">Akış</string>
 
-    <string name="profile_joined">%1$s tarihinde katildi</string>
-    <string name="profile_last_online">Son gorulme %1$s</string>
+    <string name="profile_joined">%1$s tarihinde katıldı</string>
+    <string name="profile_last_online">Son görülme %1$s</string>
 
     <string name="profile_stats_anime">Anime istatistikleri</string>
     <string name="profile_stats_manga">Manga istatistikleri</string>
-    <string name="profile_stat_days">Gun</string>
+    <string name="profile_stat_days">Gün</string>
     <string name="profile_stat_mean_score">Ortalama puan</string>
-    <string name="profile_stat_total">Toplam kayit</string>
-    <string name="profile_stat_episodes">Bolum</string>
-    <string name="profile_stat_chapters">Bolum</string>
+    <string name="profile_stat_total">Toplam kayıt</string>
+    <string name="profile_stat_episodes">Bölüm</string>
+    <string name="profile_stat_chapters">Bölüm</string>
     <string name="profile_stat_volumes">Cilt</string>
     <string name="profile_stat_rewatched">Tekrar izlenen</string>
     <string name="profile_stat_reread">Tekrar okunan</string>
 
-    <string name="profile_history_all">Tumu</string>
-    <string name="profile_history_empty">Yakin zamanda hareket yok</string>
-    <string name="profile_friends_empty">Gosterilecek arkadas yok</string>
-    <string name="profile_friends_since">%1$s tarihinden beri arkadas</string>
-    <string name="profile_feed_empty">Henuz guncelleme yok</string>
-    <string name="profile_feed_own_hint">Arkadaslarinizin guncellemeleri</string>
-    <string name="profile_feed_other_hint">Son liste guncellemeleri</string>
+    <string name="profile_history_all">Tümü</string>
+    <string name="profile_history_empty">Yakın zamanda hareket yok</string>
+    <string name="profile_friends_empty">Gösterilecek arkadaş yok</string>
+    <string name="profile_friends_since">%1$s tarihinden beri arkadaş</string>
+    <string name="profile_feed_empty">Henüz güncelleme yok</string>
+    <string name="profile_feed_own_hint">Arkadaşlarınızın güncellemeleri</string>
+    <string name="profile_feed_other_hint">Son liste güncellemeleri</string>
+    <string name="profile_completion">Tamamlanma oranı</string>
 </resources>

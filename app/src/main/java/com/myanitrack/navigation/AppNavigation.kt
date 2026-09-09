@@ -173,7 +173,7 @@ private fun NavGraphBuilder.mainGraph(
     onOpenComments: (Int) -> Unit,
 ) {
     // Sekmeler arasi gecis kaymamali: kullanici hiyerarside ilerlemiyor, yer degistiriyor.
-    topLevelComposable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia) }
+    topLevelComposable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia, onOpenSettings = onOpenSettings) }
     topLevelComposable<BrowseDestination> { BrowseRoute(onOpenMedia = onOpenMedia) }
     topLevelComposable<CalendarDestination> { CalendarRoute(onOpenMedia = onOpenMedia) }
     topLevelComposable<NewsDestination> { NewsRoute() }
@@ -188,7 +188,7 @@ private fun NavGraphBuilder.mainGraph(
             onOpenComments = onOpenComments,
         )
     }
-    composable<SettingsDestination> { SettingsRoute() }
+    composable<SettingsDestination> { SettingsRoute(onBack = onBack) }
     mediaDetailsScreen(onBack = onBack, onOpenMedia = onOpenMedia)
     userProfileScreen(onBack = onBack, onOpenMedia = onOpenMedia, onOpenUser = onOpenUser)
 

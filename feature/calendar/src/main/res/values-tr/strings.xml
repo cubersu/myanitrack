@@ -3,12 +3,12 @@
     <string name="calendar_title">Takvim</string>
     <string name="calendar_only_my_list">Listem</string>
     <string name="calendar_in_my_list">Listenizde</string>
-    <string name="calendar_time_unknown">Yayin saati bilinmiyor</string>
-    <string name="calendar_airing_now">Yayinda</string>
+    <string name="calendar_time_unknown">Yayın saati bilinmiyor</string>
+    <string name="calendar_airing_now">Yayında</string>
     <string name="calendar_in_days">%1$d g sonra</string>
     <string name="calendar_in_hours">%1$d sa sonra</string>
     <string name="calendar_in_minutes">%1$d dk sonra</string>
-    <string name="calendar_empty_title">Yayinlanan yok</string>
-    <string name="calendar_empty_my_list_title">Bugun listenizden bir sey yok</string>
-    <string name="calendar_empty_description">Haftalik takvimi yuklemek icin asagi cekin.</string>
+    <string name="calendar_empty_title">Yayınlanan yok</string>
+    <string name="calendar_empty_my_list_title">Bugün listenizden bir şey yok</string>
+    <string name="calendar_empty_description">Haftalık takvimi yüklemek için aşağı çekin.</string>
 </resources>

@@ -37,6 +37,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.androidx.appcompat)
     implementation(project(":core:ui"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:domain"))

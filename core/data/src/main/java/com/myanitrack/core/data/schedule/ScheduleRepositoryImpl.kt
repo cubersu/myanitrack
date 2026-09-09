@@ -16,6 +16,11 @@ import com.myanitrack.core.network.jikan.JikanApiService
 import com.myanitrack.core.network.jikan.dto.JikanMediaDto
 import com.myanitrack.core.network.jikan.mapper.toDomain
 import com.myanitrack.core.network.jikan.mapper.toNode
+import com.myanitrack.core.network.mal.MalApiService
+import com.myanitrack.core.network.mal.MalFields
+import com.myanitrack.core.network.mal.dto.MalListEntryDto
+import com.myanitrack.core.network.mal.mapper.toBroadcastInfo
+import com.myanitrack.core.network.mal.mapper.toDomain as toMalNode
 import com.myanitrack.core.network.util.safeApiCall
 import java.time.DayOfWeek
 import java.time.Duration
@@ -30,6 +35,7 @@ import kotlinx.serialization.builtins.ListSerializer
 @Singleton
 class ScheduleRepositoryImpl @Inject constructor(
     private val jikan: JikanApiService,
+    private val mal: MalApiService,
     private val cache: RemoteCache,
     private val mediaListDao: MediaListDao,
     @Dispatcher(AppDispatcher.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -65,6 +71,43 @@ class ScheduleRepositoryImpl @Inject constructor(
      */
     override suspend fun getWeek(forceRefresh: Boolean): AppResult<WeeklySchedule> =
         withContext(ioDispatcher) {
+            // A single cached MAL listing covers the week, including ongoing older shows.
+            // Jikan previously required seven failing requests before displaying anything.
+            val official = cache.cachedCall(
+                key = "mal:schedule:airing",
+                serializer = ListSerializer(MalListEntryDto.serializer()),
+                ttl = SCHEDULE_TTL,
+                forceRefresh = forceRefresh,
+            ) {
+                safeApiCall {
+                    val entries = mutableListOf<MalListEntryDto>()
+                    var offset = 0
+                    do {
+                        val page = mal.getAnimeRanking(
+                            rankingType = "airing", limit = 100, offset = offset,
+                            fields = "${MalFields.ANIME_LIST},broadcast",
+                        )
+                        entries += page.data
+                        offset += 100
+                    } while (page.paging.next != null)
+                    entries.toList()
+                }
+            }
+            if (official is AppResult.Success) {
+                val watchingIds = watchingAnimeIds()
+                val entries = official.data.map { entry ->
+                    val broadcast = entry.node.broadcast.toBroadcastInfo()
+                    ScheduleEntry(
+                        node = entry.node.toMalNode(MediaType.ANIME),
+                        broadcast = broadcast,
+                        nextAiringAt = NextEpisodeCalculator.nextAiring(broadcast, Instant.now()),
+                        isInMyList = entry.node.id in watchingIds,
+                    )
+                }
+                return@withContext AppResult.Success(WeeklySchedule(
+                    DayOfWeek.entries.associateWith { day -> entries.filter { it.broadcast.day == day } },
+                ))
+            }
             val days = mutableMapOf<DayOfWeek, List<ScheduleEntry>>()
             var firstFailure: AppResult.Failure? = null
 

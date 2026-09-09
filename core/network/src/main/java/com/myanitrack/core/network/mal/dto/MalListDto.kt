@@ -64,6 +64,13 @@ data class MalNodeDto(
     @SerialName("num_chapters") val numChapters: Int? = null,
     @SerialName("num_volumes") val numVolumes: Int? = null,
     val studios: List<MalNamedDto> = emptyList(),
+    val broadcast: MalBroadcastDto? = null,
+)
+
+@Serializable
+data class MalBroadcastDto(
+    @SerialName("day_of_the_week") val dayOfWeek: String? = null,
+    @SerialName("start_time") val startTime: String? = null,
 )
 
 /** `my_list_status` alani. Anime ve manga varyantlarinin birlesimi. */

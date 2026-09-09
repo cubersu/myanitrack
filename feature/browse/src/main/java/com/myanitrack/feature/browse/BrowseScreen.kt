@@ -53,6 +53,7 @@ import com.myanitrack.core.model.MediaType
 import com.myanitrack.core.model.RecommendationPair
 import com.myanitrack.core.model.TopCategory
 import com.myanitrack.core.ui.toUserMessage
+import com.myanitrack.core.ui.localizedLabel
 
 private const val COVER_ASPECT_RATIO = 0.7f
 
@@ -182,7 +183,7 @@ internal fun BrowseScreen(
                 BrowseTab.SEASON -> {
                     SeasonSelector(
                         label = "${
-                            uiState.season.name.name.lowercase().replaceFirstChar(Char::uppercase)
+                            uiState.season.name.localizedLabel()
                         } ${uiState.season.year}",
                         onPrevious = onPreviousSeason,
                         onNext = onNextSeason,

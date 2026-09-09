@@ -2,6 +2,7 @@ package com.myanitrack.feature.auth
 
 import android.content.ActivityNotFoundException
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -103,7 +104,7 @@ internal fun LoginScreen(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.padding(32.dp),
+        modifier = modifier.padding(32.dp).then(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState())),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -120,6 +121,8 @@ internal fun LoginScreen(
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(40.dp))
+
+        com.myanitrack.core.ui.component.LegalLinks()
 
         if (!uiState.isClientConfigured) {
             MissingClientIdCard()

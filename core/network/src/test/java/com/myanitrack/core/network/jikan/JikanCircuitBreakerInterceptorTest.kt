@@ -96,13 +96,13 @@ class JikanCircuitBreakerInterceptorTest {
     }
 
     @Test
-    @DisplayName("429 da devre kesiciyi besler")
-    fun `rate limit responses feed the breaker`() {
+    @DisplayName("429 hiz sinirlayici tarafindan yonetilir, 503 devresini acmaz")
+    fun `rate limit responses do not open the server failure breaker`() {
         val subject = breaker(FakeClock())
 
         repeat(JikanCircuitBreakerInterceptor.FAILURE_THRESHOLD) { subject.recordOutcome(429) }
 
-        assertTrue(subject.isOpen())
+        assertFalse(subject.isOpen())
     }
 
     @Test

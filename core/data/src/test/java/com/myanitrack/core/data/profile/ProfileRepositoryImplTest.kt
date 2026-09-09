@@ -41,12 +41,14 @@ class ProfileRepositoryImplTest {
     }
 
     private val jikan = mockk<JikanApiService>()
+    private val mal = mockk<com.myanitrack.core.network.mal.MalApiService>()
     private val rssService = mockk<MalRssService>()
     private val sessionStore = mockk<AuthSessionStore>(relaxed = true)
     private val dispatcher = StandardTestDispatcher()
 
     private fun repository() = ProfileRepositoryImpl(
         jikan = jikan,
+        mal = mal,
         rssService = rssService,
         rssParser = RssParser(),
         cache = RemoteCache(FakeCacheDao(), Json { ignoreUnknownKeys = true }),
@@ -72,6 +74,47 @@ class ProfileRepositoryImplTest {
     }}
         </channel></rss>
     """.trimIndent()
+
+    @Test
+    fun `official avatar replaces missing Jikan photo while preserving manga statistics`() = runTest(dispatcher) {
+        coEvery { sessionStore.current() } returns com.myanitrack.core.model.AuthSession(
+            accessToken = "test", refreshToken = "test", expiresAt = java.time.Instant.MAX, userName = "Omer",
+        )
+        coEvery { jikan.getUserProfile("Omer") } returns JikanResponse(JikanUserProfileDto(
+            malId = 42, username = "Omer",
+            statistics = com.myanitrack.core.network.jikan.dto.JikanUserStatisticsDto(
+                manga = com.myanitrack.core.network.jikan.dto.JikanMangaStatsDto(completed = 5),
+            ),
+        ))
+        coEvery { mal.getMyUser() } returns com.myanitrack.core.network.mal.dto.MalUserDto(
+            id = 42, name = "Omer", picture = "https://cdn.myanimelist.net/images/userimages/42.jpg",
+        )
+        val profile = (repository().getProfile("Omer") as AppResult.Success).data
+        assertEquals("https://cdn.myanimelist.net/images/userimages/42.jpg", profile.imageUrl)
+        assertEquals(5, profile.mangaStats?.completed)
+    }
+
+    @Test
+    fun `own profile uses official API when Jikan fails`() = runTest(dispatcher) {
+        coEvery { sessionStore.current() } returns com.myanitrack.core.model.AuthSession(
+            accessToken = "test", refreshToken = "test", expiresAt = java.time.Instant.MAX, userName = "Omer",
+        )
+        coEvery { jikan.getUserProfile("Omer") } throws IOException("upstream unavailable")
+        coEvery { mal.getMyUser() } returns com.myanitrack.core.network.mal.dto.MalUserDto(id = 42, name = "Omer")
+        val result = repository().getProfile("Omer") as AppResult.Success
+        assertEquals("Omer", result.data.userName)
+        assertEquals(42, result.data.malId)
+    }
+
+    @Test
+    fun `other profile must not fall back to the signed in user`() = runTest(dispatcher) {
+        coEvery { sessionStore.current() } returns com.myanitrack.core.model.AuthSession(
+            accessToken = "test", refreshToken = "test", expiresAt = java.time.Instant.MAX, userName = "Omer",
+        )
+        coEvery { jikan.getUserProfile("SomeoneElse") } throws IOException("upstream unavailable")
+        assertInstanceOf(AppResult.Failure::class.java, repository().getProfile("SomeoneElse"))
+        coVerify(exactly = 0) { mal.getMyUser() }
+    }
 
     @Test
     @DisplayName("Profil Jikan-dan alinip domain modeline cevrilir")

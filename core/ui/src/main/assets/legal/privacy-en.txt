@@ -1,0 +1,33 @@
+MyAniTrack — Privacy and data deletion
+Developer: TairyFail
+Contact: tairyfailsupport@gmail.com
+Last updated: 9 September 2026
+
+MyAniTrack is an independent client for managing your MyAnimeList account. It is not affiliated with or endorsed by MyAnimeList.
+
+Data processed
+Your MyAnimeList username, profile, anime/manga lists, progress, ratings, dates, tags and notes are displayed and may be stored on your device. List edits are transmitted to MyAnimeList for synchronization. Search terms and identifiers of requested titles are sent to MyAnimeList or Jikan to retrieve content. These services and image hosts receive network information such as your IP address.
+
+Sign-in and security
+Sign-in uses MyAnimeList OAuth in your browser. The app does not collect your MyAnimeList password. Access and refresh tokens are encrypted on-device using Android Keystore. Connections use HTTPS. Android backup of application data is disabled.
+
+Website content
+Forums, private messages and profile comments open MyAnimeList web pages. The website login is separate from OAuth. These pages may use cookies, advertising or measurement technologies from MyAnimeList and its partners. Messages and posts you submit there are processed by MyAnimeList. MyAniTrack does not send their content to the app developer.
+
+Data sent to the developer
+This version has no developer-operated backend, advertising SDK, analytics SDK or automatic crash reporting. If you email support, your email address and message are processed to provide assistance. Support correspondence is retained for up to 90 days after resolution, unless a longer retention period is legally required.
+
+Permissions
+Internet and network-state access support synchronization. Notification permission is optional and used for airing reminders. The app does not request contacts, location, camera or microphone permissions.
+
+Retention and deletion
+Cached responses can be removed in Settings > Clear cache. To delete all local data, confirm Settings > Sign out. Android then clears application data, saved sign-ins, WebView data and preferences, and closes the app. Unsynced changes are lost. You can also use Android Settings > Apps > MyAniTrack > Storage > Clear data.
+
+MyAniTrack does not create a separate server account. Local deletion does not delete your MyAnimeList account or synchronized lists. To delete that account or revoke app access, use the account settings on the MyAnimeList website. MyAnimeList controls these actions. You may request deletion of support correspondence at tairyfailsupport@gmail.com.
+
+Third-party policies
+MyAnimeList: https://myanimelist.net/about/privacy_policy
+Jikan: https://jikan.moe/
+
+Changes and contact
+This policy will be updated if data practices change. Send privacy and deletion requests to tairyfailsupport@gmail.com.

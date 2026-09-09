@@ -1,6 +1,18 @@
 package com.myanitrack.feature.profile
 
 import android.content.Intent
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import com.myanitrack.core.model.ListStatus
+import java.text.NumberFormat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +27,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -89,9 +104,7 @@ fun ProfileRoute(
                 TopAppBar(
                     title = {
                         Text(
-                            text = uiState.userName.ifBlank {
-                                stringResource(R.string.profile_title)
-                            },
+                            text = stringResource(R.string.profile_title),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -126,6 +139,11 @@ fun ProfileRoute(
                             }
                         }
 
+                        onOpenSettings?.let { openSettings ->
+                            IconButton(onClick = openSettings) {
+                                Icon(Icons.Outlined.Settings, stringResource(R.string.profile_settings))
+                            }
+                        }
                         ProfileOverflowMenu(
                             expanded = menuOpen,
                             onExpandedChange = { menuOpen = it },
@@ -133,7 +151,7 @@ fun ProfileRoute(
                             onOpenForum = onOpenForum,
                             onOpenMessages = onOpenMessages,
                             onOpenComments = onOpenComments,
-                            onOpenSettings = onOpenSettings,
+                            onOpenSettings = null,
                         )
                     },
                 )
@@ -179,7 +197,7 @@ fun ProfileRoute(
                 modifier = contentModifier,
             ) {
                 when (uiState.tab) {
-                    ProfileTab.OVERVIEW -> OverviewTab(profile = uiState.profile!!)
+                    ProfileTab.OVERVIEW -> OverviewTab(profile = uiState.profile!!, animeEntries = uiState.animeEntries)
 
                     ProfileTab.HISTORY -> HistoryTab(
                         entries = uiState.history,
@@ -207,9 +225,9 @@ fun ProfileRoute(
 }
 
 @Composable
-private fun OverviewTab(profile: UserProfileDetails) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item(key = "header") {
+private fun OverviewTab(profile: UserProfileDetails, animeEntries: List<com.myanitrack.core.model.MediaListEntry>) {
+    LazyVerticalGrid(columns = GridCells.Adaptive(360.dp), modifier = Modifier.fillMaxSize()) {
+        item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 MediaCover(
                     imageUrl = profile.imageUrl,
@@ -266,84 +284,100 @@ private fun OverviewTab(profile: UserProfileDetails) {
                 )
             }
         }
-        item(key = "spacer") { Spacer(Modifier.height(24.dp)) }
+        if (animeEntries.isNotEmpty()) {
+            item(key = "scores") { ScoreInsights(animeEntries) }
+            item(key = "genres") { GenreInsights(animeEntries) }
+        }
+        item(key = "spacer", span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(24.dp)) }
     }
 }
 
 @Composable
 private fun StatisticsSection(title: String, stats: UserMediaStatistics) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-
-        // Durum dagilimi: her durum toplam icindeki payi kadar genislikte.
-        val total = stats.statusBreakdown.sumOf { it.second }
-        if (total > 0) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                stats.statusBreakdown.forEach { (_, count) ->
-                    LinearProgressIndicator(
-                        progress = { 1f },
-                        modifier = Modifier
-                            .weight(count.toFloat())
-                            .padding(end = 2.dp),
-                    )
+    val total = stats.statusBreakdown.sumOf { it.second }
+    val completion = if (total > 0) stats.completed * 100.0 / total else 0.0
+    val statuses = ListStatus.entries
+    val colors = listOf(Color(0xFF508C82), Color(0xFF6486B8), Color(0xFFB29560), Color(0xFFAE7479), Color(0xFF8E91A6))
+    val counts = listOf(stats.inProgress, stats.completed, stats.onHold, stats.dropped, stats.planned)
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+    ) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                Box(Modifier.size(112.dp), contentAlignment = Alignment.Center) {
+                    val trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    Canvas(Modifier.size(104.dp)) {
+                        drawArc(trackColor, 0f, 360f, false, style = Stroke(10.dp.toPx()))
+                        var start = -90f
+                        if (total > 0) counts.forEachIndexed { index, count ->
+                            val sweep = count * 360f / total
+                            if (sweep > 0) drawArc(colors[index], start, (sweep - 2f).coerceAtLeast(0.5f), false, style = Stroke(10.dp.toPx(), cap = StrokeCap.Butt))
+                            start += sweep
+                        }
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(total.number(), style = MaterialTheme.typography.headlineSmall)
+                        Text(stringResource(R.string.profile_stat_total), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    statuses.forEachIndexed { index, status ->
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(Modifier.size(7.dp).background(colors[index], CircleShape))
+                            Text(statusLabel(status, stats.mediaType), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+                            Text(counts[index].number(), style = MaterialTheme.typography.labelLarge)
+                        }
+                    }
                 }
             }
-            Spacer(Modifier.height(8.dp))
-        }
-
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            StatCell(stringResource(R.string.profile_stat_days), stats.daysSpent.formatScore())
-            StatCell(
-                stringResource(R.string.profile_stat_mean_score),
-                stats.meanScore.formatScore(),
-            )
-            StatCell(
-                stringResource(R.string.profile_stat_total),
-                stats.totalEntries.toString(),
-            )
-            StatCell(
-                stringResource(
-                    if (stats.mediaType.isAnime) {
-                        R.string.profile_stat_episodes
-                    } else {
-                        R.string.profile_stat_chapters
-                    },
-                ),
-                stats.unitsConsumed.toString(),
-            )
-            if (stats.mediaType.isManga) {
-                StatCell(
-                    stringResource(R.string.profile_stat_volumes),
-                    stats.volumesRead.toString(),
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(stringResource(R.string.profile_completion), style = MaterialTheme.typography.labelMedium)
+                    Text("${completion.formatScore()}%", style = MaterialTheme.typography.labelLarge)
+                }
+                LinearProgressIndicator(progress = { (completion / 100).toFloat() }, modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape), color = colors[1], trackColor = MaterialTheme.colorScheme.surfaceContainerHigh, drawStopIndicator = {})
             }
-            StatCell(
-                stringResource(
-                    if (stats.mediaType.isAnime) {
-                        R.string.profile_stat_rewatched
-                    } else {
-                        R.string.profile_stat_reread
-                    },
-                ),
-                stats.repeated.toString(),
-            )
+            val metrics = listOf(
+                stringResource(R.string.profile_stat_days) to stats.daysSpent.formatScore(),
+                stringResource(R.string.profile_stat_mean_score) to (if (stats.meanScore > 0) stats.meanScore.formatScore() else "—"),
+                stringResource(if (stats.mediaType.isAnime) R.string.profile_stat_episodes else R.string.profile_stat_chapters) to stats.unitsConsumed.number(),
+                stringResource(if (stats.mediaType.isAnime) R.string.profile_stat_rewatched else R.string.profile_stat_reread) to stats.repeated.number(),
+            ) + if (stats.mediaType.isManga) listOf(stringResource(R.string.profile_stat_volumes) to stats.volumesRead.number()) else emptyList()
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                metrics.chunked(2).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        row.forEach { (label, value) -> StatCell(label, value, Modifier.weight(1f)) }
+                        if (row.size == 1) Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun StatCell(label: String, value: String) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text(text = value, style = MaterialTheme.typography.titleSmall)
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+private fun StatCell(label: String, value: String, modifier: Modifier = Modifier) {
+    Surface(modifier, shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceContainerLow) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(value, style = MaterialTheme.typography.titleLarge)
+            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
 
+@Composable
+private fun statusLabel(status: ListStatus, type: MediaType): String = stringResource(when (status) {
+    ListStatus.WATCHING -> if (type.isAnime) com.myanitrack.core.ui.R.string.status_watching else com.myanitrack.core.ui.R.string.status_reading
+    ListStatus.COMPLETED -> com.myanitrack.core.ui.R.string.status_completed
+    ListStatus.ON_HOLD -> com.myanitrack.core.ui.R.string.status_on_hold
+    ListStatus.DROPPED -> com.myanitrack.core.ui.R.string.status_dropped
+    ListStatus.PLAN_TO_WATCH -> if (type.isAnime) com.myanitrack.core.ui.R.string.status_plan_to_watch else com.myanitrack.core.ui.R.string.status_plan_to_read
+})
+
+private fun Int.number(): String = NumberFormat.getIntegerInstance().format(this)
 @Composable
 private fun HistoryTab(
     entries: List<HistoryEntry>,

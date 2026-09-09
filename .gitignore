@@ -12,3 +12,7 @@ build/
 /captures
 .externalNativeBuild
 .cxx
+*.jks
+*.keystore
+/keystore.properties
+/release-signing.properties

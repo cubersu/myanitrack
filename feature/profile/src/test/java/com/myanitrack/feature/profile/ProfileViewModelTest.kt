@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test
 class ProfileViewModelTest {
 
     private val repository = mockk<ProfileRepository>(relaxed = true)
+    private val listRepository = mockk<com.myanitrack.core.domain.repository.MediaListRepository>()
 
     private val profile = UserProfileDetails(userName = "Omer", malId = 42)
     private val history = listOf(
@@ -56,6 +57,7 @@ class ProfileViewModelTest {
 
     @BeforeEach
     fun setUp() {
+        every { listRepository.observeList(any(), any()) } returns flowOf(emptyList())
         Dispatchers.setMain(StandardTestDispatcher())
         every { repository.currentUserName } returns flowOf("Omer")
         coEvery { repository.getProfile(any(), any()) } returns AppResult.Success(profile)
@@ -70,6 +72,7 @@ class ProfileViewModelTest {
 
     private fun viewModel(userName: String? = null) = ProfileViewModel(
         profileRepository = repository,
+        listRepository = listRepository,
         savedStateHandle = SavedStateHandle().apply {
             if (userName != null) set("userName", userName)
         },

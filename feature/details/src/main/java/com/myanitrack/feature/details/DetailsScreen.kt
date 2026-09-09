@@ -57,6 +57,7 @@ import com.myanitrack.core.model.MediaDetails
 import com.myanitrack.core.model.MediaType
 import com.myanitrack.core.ui.ObserveAsEvents
 import com.myanitrack.core.ui.toUserMessage
+import com.myanitrack.core.ui.localizedLabel
 import com.myanitrack.feature.details.component.CharacterRow
 import com.myanitrack.feature.details.component.ChipRow
 import com.myanitrack.feature.details.component.ExpandableText
@@ -396,7 +397,7 @@ private fun statusLabel(status: ListStatus, isAnime: Boolean): String = stringRe
 private fun MediaDetails.infoRows(): List<Pair<String, String>> = buildList {
     add(stringResource(R.string.details_info_type) to subType.name.replace('_', ' '))
     airingStatus.takeIf { it.name != "UNKNOWN" }?.let {
-        add(stringResource(R.string.details_info_status) to it.name.replace('_', ' '))
+        add(stringResource(R.string.details_info_status) to it.localizedLabel())
     }
     totalUnits?.let {
         add(
@@ -414,7 +415,7 @@ private fun MediaDetails.infoRows(): List<Pair<String, String>> = buildList {
     season?.let {
         add(
             stringResource(R.string.details_info_season) to
-                "${it.name.name.lowercase().replaceFirstChar(Char::uppercase)} ${it.year}",
+                "${it.name.localizedLabel()} ${it.year}",
         )
     }
     broadcast?.let { add(stringResource(R.string.details_info_broadcast) to it) }

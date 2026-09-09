@@ -19,8 +19,7 @@ fun AppError.toUserMessage(context: Context): String = when (this) {
     is AppError.RateLimited -> retryAfterSeconds?.let {
         context.getString(R.string.error_rate_limited_seconds, it.toInt())
     } ?: context.getString(R.string.error_rate_limited)
-    // Kod mesaja konmuyor: kullanici icin 502 ile 504 arasinda bir fark yok,
-    // onemli olan sorunun MAL tarafinda oldugu ve onbellegin calistigi.
+    // MAL, Jikan and RSS share this mapping; do not blame a specific provider.
     is AppError.Server -> context.getString(R.string.error_server)
     is AppError.Http -> context.getString(R.string.error_http, code)
     is AppError.Serialization -> context.getString(R.string.error_serialization)

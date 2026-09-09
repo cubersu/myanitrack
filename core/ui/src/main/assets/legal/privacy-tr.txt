@@ -1,0 +1,33 @@
+MyAniTrack — Gizlilik ve veri silme
+Geliştirici: TairyFail
+İletişim: tairyfailsupport@gmail.com
+Son güncelleme: 9 Eylül 2026
+
+MyAniTrack, MyAnimeList hesabınızı yönetmek için geliştirilmiş bağımsız bir istemcidir. MyAnimeList ile bağlantılı veya onun tarafından onaylanmış resmi bir uygulama değildir.
+
+İşlenen veriler
+MyAnimeList kullanıcı adınız, profil bilgileriniz, anime/manga listeniz, izleme ve okuma ilerlemeniz, puanlarınız, tarihleriniz, etiketleriniz ve notlarınız uygulamada görüntülenir ve cihazda saklanabilir. Listeye yaptığınız değişiklikler eşitleme için MyAnimeList'e iletilir. Arama terimleri ve açılan yapımların kimlikleri içerik almak için MyAnimeList veya Jikan'a gönderilir. Bu hizmetler ve görsel sunucuları bağlantı sırasında IP adresi gibi ağ bilgilerini görebilir.
+
+Giriş ve güvenlik
+Giriş, tarayıcıda MyAnimeList OAuth yetkilendirmesiyle yapılır. Uygulama MyAnimeList şifrenizi toplamaz. Erişim ve yenileme belirteçleri Android Keystore kullanılarak şifreli biçimde cihazda tutulur. Bağlantılar HTTPS kullanır. Uygulama verilerinin Android yedeklemesi kapalıdır.
+
+Web sayfaları
+Forum, mesajlar ve profil yorumları MyAnimeList web sayfalarında açılır. Web oturumu OAuth oturumundan ayrıdır. Bu sayfalar MyAnimeList ve ortaklarının çerezlerini, reklamlarını veya ölçüm teknolojilerini kullanabilir. Burada yazdığınız mesajlar ve paylaşımlar MyAnimeList tarafından işlenir. MyAniTrack bu sayfalardaki içerikleri geliştiriciye göndermez.
+
+Geliştiriciye gönderilen veriler
+Bu sürümde geliştiriciye ait bir sunucu, reklam SDK'sı, analiz SDK'sı veya otomatik çökme raporlama hizmeti yoktur. Destek adresine e-posta gönderirseniz adresiniz ve mesajınız destek sağlamak için işlenir. Destek yazışmaları talep sonuçlandıktan sonra en fazla 90 gün tutulur; hukuken gerekli kayıtlar daha uzun tutulabilir.
+
+İzinler
+İnternet ve ağ durumu erişimi eşitleme için kullanılır. Bildirim izni yayın hatırlatmaları içindir ve isteğe bağlıdır. Kişiler, konum, kamera ve mikrofon izinleri istenmez.
+
+Saklama ve silme
+Önbellek cihazda tutulur ve Ayarlar > Önbelleği temizle ile temizlenebilir. Tüm yerel verileri silmek için Ayarlar > Çıkış yap seçeneğini onaylayın. Bu işlem Android üzerinden uygulamanın tüm yerel verilerini, oturumlarını, WebView verilerini ve tercihlerini siler ve uygulamayı kapatır. Eşitlenmemiş değişiklikler kaybolur. Android > Ayarlar > Uygulamalar > MyAniTrack > Depolama > Verileri temizle yolu da kullanılabilir.
+
+MyAniTrack ayrı bir sunucu hesabı oluşturmaz. Yerel veri silme, MyAnimeList hesabınızı veya sunucudaki listenizi silmez. MyAnimeList hesabınızı silmek ya da uygulama erişimini kaldırmak için MyAnimeList web sitesindeki hesap ayarlarını kullanın. Bu işlemler MyAnimeList tarafından yönetilir. Destek yazışmalarınızın silinmesini tairyfailsupport@gmail.com adresinden isteyebilirsiniz.
+
+Üçüncü taraf politikaları
+MyAnimeList: https://myanimelist.net/about/privacy_policy
+Jikan: https://jikan.moe/
+
+Değişiklikler ve iletişim
+Veri işleme uygulamaları değiştiğinde bu metin güncellenir. Gizlilik veya silme taleplerinizi tairyfailsupport@gmail.com adresine gönderebilirsiniz.

@@ -15,12 +15,22 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.rememberUpdatedState
+import java.time.Instant
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import com.myanitrack.feature.mylist.component.airingCountdown
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.DropdownMenu
@@ -75,10 +85,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun MyListRoute(
     onOpenDetails: (MediaType, Int) -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MyListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val clock = remember { flow { while (true) { emit(Instant.now()); delay(1_000) } } }
+    val now by clock.collectAsStateWithLifecycle(initialValue = Instant.now())
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -98,6 +111,8 @@ fun MyListRoute(
 
     MyListScreen(
         uiState = uiState,
+        now = now,
+        onOpenSettings = onOpenSettings,
         snackbarHostState = snackbarHostState,
         onMediaTypeChange = viewModel::selectMediaType,
         onStatusChange = viewModel::selectStatus,
@@ -120,6 +135,8 @@ fun MyListRoute(
 @Composable
 internal fun MyListScreen(
     uiState: MyListUiState,
+    now: Instant,
+    onOpenSettings: () -> Unit,
     snackbarHostState: SnackbarHostState,
     onMediaTypeChange: (MediaType) -> Unit,
     onStatusChange: (ListStatus?) -> Unit,
@@ -137,6 +154,16 @@ internal fun MyListScreen(
     onDeleteEntry: (MediaListEntry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val statuses = ListStatus.entries
+    val pagerState = rememberPagerState(
+        initialPage = statuses.indexOf(uiState.filter.status).takeIf { it >= 0 } ?: statuses.size,
+        pageCount = { statuses.size + 1 },
+    )
+    val scope = rememberCoroutineScope()
+    val updateStatus by rememberUpdatedState(onStatusChange)
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }.collect { updateStatus(statuses.getOrNull(it)) }
+    }
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -144,17 +171,25 @@ internal fun MyListScreen(
             Column {
                 MyListTopBar(
                     uiState = uiState,
+                    onOpenSettings = onOpenSettings,
                     onMediaTypeChange = onMediaTypeChange,
                     onQueryChange = onQueryChange,
                     onSearchActiveChange = onSearchActiveChange,
                     onViewModeChange = onViewModeChange,
                     onSortChange = onSortChange,
                 )
+                if (!uiState.isSearchActive) {
+                    Box(Modifier.padding(horizontal = 16.dp)) {
+                        MediaTypeToggle(selected = uiState.mediaType, onSelect = onMediaTypeChange)
+                    }
+                }
                 StatusTabs(
-                    selected = uiState.filter.status,
+                    selected = statuses.getOrNull(pagerState.currentPage),
                     counts = uiState.statusCounts,
                     isAnime = uiState.mediaType.isAnime,
-                    onSelect = onStatusChange,
+                    onSelect = { status ->
+                        scope.launch { pagerState.animateScrollToPage(statuses.indexOf(status).takeIf { it >= 0 } ?: statuses.size) }
+                    },
                 )
                 if (uiState.availableTags.isNotEmpty()) {
                     TagFilterRow(
@@ -177,10 +212,17 @@ internal fun MyListScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
+            HorizontalPager(
+                state = pagerState,
+                key = { "${uiState.mediaType.name}:$it" },
+                modifier = Modifier.fillMaxSize(),
+            ) { page ->
+            val status = statuses.getOrNull(page)
+            val entries = uiState.allEntries.filter { status == null || it.listStatus.status == status }
             when {
                 uiState.isInitialLoading -> LoadingState()
 
-                uiState.isEmpty -> MessageState(
+                entries.isEmpty() -> MessageState(
                     title = stringResource(R.string.mylist_empty_title),
                     description = stringResource(R.string.mylist_empty_description),
                     icon = Icons.Outlined.Inbox,
@@ -189,12 +231,17 @@ internal fun MyListScreen(
                 )
 
                 else -> MyListContent(
-                    entries = uiState.entries,
+                    entries = entries,
+                    releasedEpisodes = uiState.releasedEpisodes,
+                    countdowns = entries.mapNotNull { entry ->
+                        airingCountdown(entry.node, uiState.broadcasts[entry.id], now)?.let { entry.id to it }
+                    }.toMap(),
                     viewMode = uiState.viewMode,
                     onEntryClick = onEntryClick,
                     onEntryLongClick = onEntryLongClick,
                     onIncrement = onIncrement,
                 )
+            }
             }
         }
     }
@@ -212,6 +259,8 @@ internal fun MyListScreen(
 @Composable
 private fun MyListContent(
     entries: List<MediaListEntry>,
+    releasedEpisodes: Map<Int, Int>,
+    countdowns: Map<Int, String>,
     viewMode: ListViewMode,
     onEntryClick: (MediaListEntry) -> Unit,
     onEntryLongClick: (MediaListEntry) -> Unit,
@@ -229,6 +278,8 @@ private fun MyListContent(
             items(entries, key = { it.id }) { entry ->
                 GridListItem(
                     entry = entry,
+                    releasedEpisodes = releasedEpisodes[entry.id],
+                    countdown = countdowns[entry.id],
                     onClick = { onEntryClick(entry) },
                     onLongClick = { onEntryLongClick(entry) },
                 )
@@ -239,6 +290,8 @@ private fun MyListContent(
             items(entries, key = { it.id }) { entry ->
                 CompactListItem(
                     entry = entry,
+                    releasedEpisodes = releasedEpisodes[entry.id],
+                    countdown = countdowns[entry.id],
                     onClick = { onEntryClick(entry) },
                     onLongClick = { onEntryLongClick(entry) },
                     onIncrement = { onIncrement(entry) },
@@ -256,6 +309,8 @@ private fun MyListContent(
             items(entries, key = { it.id }) { entry ->
                 DetailedListItem(
                     entry = entry,
+                    releasedEpisodes = releasedEpisodes[entry.id],
+                    countdown = countdowns[entry.id],
                     onClick = { onEntryClick(entry) },
                     onLongClick = { onEntryLongClick(entry) },
                     onIncrement = { onIncrement(entry) },
@@ -269,6 +324,7 @@ private fun MyListContent(
 @Composable
 private fun MyListTopBar(
     uiState: MyListUiState,
+    onOpenSettings: () -> Unit,
     onMediaTypeChange: (MediaType) -> Unit,
     onQueryChange: (String) -> Unit,
     onSearchActiveChange: (Boolean) -> Unit,
@@ -293,7 +349,7 @@ private fun MyListTopBar(
                     modifier = Modifier.fillMaxWidth(),
                 )
             } else {
-                MediaTypeToggle(selected = uiState.mediaType, onSelect = onMediaTypeChange)
+                Text(stringResource(R.string.mylist_title))
             }
         },
         actions = {
@@ -356,6 +412,9 @@ private fun MyListTopBar(
                         )
                     }
                 }
+            }
+            IconButton(onClick = onOpenSettings) {
+                Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.mylist_settings))
             }
         },
     )

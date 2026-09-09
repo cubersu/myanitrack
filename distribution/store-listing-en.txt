@@ -1,0 +1,19 @@
+App name: MyAniTrack
+Developer: TairyFail
+Support: tairyfailsupport@gmail.com
+
+Short description:
+Track anime and manga, see new episodes and explore your personal statistics.
+
+Full description:
+MyAniTrack is an independent tracker for managing the anime and manga lists in your MyAnimeList account.
+
+• Manage progress, ratings and list entries.
+• Swipe between status tabs.
+• See released episodes and countdowns for upcoming broadcasts.
+• Discover titles, seasonal anime and rankings.
+• Explore your status breakdown, ratings and most-watched genres.
+• Choose English or Turkish, light or dark themes and multiple list layouts.
+• Access cached lists offline and synchronize changes when connected.
+
+A MyAnimeList account is required. Some content and airing information depends on third-party service availability. MyAniTrack does not stream or download videos. It is not the official MyAnimeList app and is not endorsed by MyAnimeList.

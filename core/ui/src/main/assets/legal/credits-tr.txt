@@ -1,0 +1,20 @@
+MyAniTrack 1.0.0
+Geliştirici: TairyFail
+Destek: tairyfailsupport@gmail.com
+
+MyAnimeList için bağımsız anime ve manga takip uygulaması. MyAnimeList'in resmi uygulaması değildir; MyAnimeList tarafından desteklendiği veya onaylandığı anlamına gelmez.
+
+Veri ve içerik
+MyAnimeList — hesap bağlantısı, listeler, yapım bilgileri, yayınlanan bölümler ve RSS içerikleri.
+https://myanimelist.net/
+Jikan — ek anime/manga bilgilerini sağlayan bağımsız API.
+https://jikan.moe/
+Kapaklar, karakter görselleri, metinler ve ticari markalar ilgili hak sahiplerine aittir. Kaynak göstermek, içerikleri yeniden kullanmak için ayrıca izin gerektiğinde bu iznin yerine geçmez.
+
+Esin kaynağı
+Drutol ve MALClient katkıcıları — anime/manga takip iş akışları ve özellikleri için teşekkürler.
+https://github.com/Drutol/MALClient
+MALClient GPL-3.0 lisansıyla sunulur. Bu teşekkür, kaynak projenin onayını veya ortaklığını ifade etmez.
+
+Teknoloji
+Android ve AndroidX / Jetpack Compose, Kotlin ve kotlinx, Dagger/Hilt, Retrofit, OkHttp, Okio, Coil, jsoup ve bunların katkıcılarına teşekkürler. Dağıtıma dahil bağımlılıklar ve lisans metinleri “Açık kaynak lisansları” bölümündedir.

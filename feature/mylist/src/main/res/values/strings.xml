@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="mylist_progress_summary">Progress: %1$d / %2$s</string>
+    <string name="mylist_next_episode">Next episode</string>
+    <string name="mylist_title">My list</string>
+    <string name="mylist_settings">Settings</string>
+    <string name="mylist_watched_count">%1$d watched</string>
+    <string name="mylist_released_count">%1$s released</string>
 
 
     <string name="view_mode_grid">Grid</string>

@@ -42,6 +42,7 @@ dependencies {
     implementation(project(":core:datastore"))
     implementation(libs.androidx.paging.runtime)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.jsoup)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 

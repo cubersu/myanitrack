@@ -9,6 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -35,19 +42,25 @@ import com.myanitrack.core.model.ThemeMode
 
 @Composable
 fun SettingsRoute(
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
     SettingsScreen(
         uiState = uiState,
+        onBack = onBack,
         onThemeModeChange = viewModel::setThemeMode,
         onDynamicColorChange = viewModel::setDynamicColor,
         onDefaultMediaTypeChange = viewModel::setDefaultMediaType,
         onListViewModeChange = viewModel::setListViewMode,
         onHideNsfwChange = viewModel::setHideNsfw,
         onAiringNotificationsChange = viewModel::setAiringNotifications,
-        onLogout = viewModel::logout,
+        onLogout = {
+            // Android atomically clears local databases, encrypted tokens, WebView cookies and caches, then stops this process.
+            context.getSystemService(android.app.ActivityManager::class.java).clearApplicationUserData()
+        },
         onClearCache = viewModel::clearCache,
         modifier = modifier,
     )
@@ -57,6 +70,7 @@ fun SettingsRoute(
 @Composable
 internal fun SettingsScreen(
     uiState: SettingsUiState,
+    onBack: () -> Unit,
     onThemeModeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onDefaultMediaTypeChange: (MediaType) -> Unit,
@@ -72,7 +86,16 @@ internal fun SettingsScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.settings_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.settings_back))
+                    }
+                },
+            )
+        },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -80,6 +103,20 @@ internal fun SettingsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
         ) {
+            // Read configuration so the selected language updates after recreation.
+            com.myanitrack.core.ui.component.LegalLinks(Modifier.padding(horizontal = 8.dp))
+            HorizontalDivider()
+            val configuration = LocalConfiguration.current
+            val language = remember(configuration) { AppCompatDelegate.getApplicationLocales().toLanguageTags() }
+            SectionHeader(stringResource(R.string.settings_language))
+            listOf("" to stringResource(R.string.settings_language_system), "tr" to "Türkçe", "en" to "English").forEach { (tag, label) ->
+                RadioRow(
+                    label = label,
+                    selected = language == tag,
+                    onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag)) },
+                )
+            }
+            HorizontalDivider()
             SectionHeader(stringResource(R.string.settings_section_appearance))
             ThemeMode.entries.forEach { mode ->
                 RadioRow(

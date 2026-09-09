@@ -23,6 +23,10 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.myanitrack.core.model.ListStatus
+import com.myanitrack.core.model.AiringStatus
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,13 +48,15 @@ private const val COVER_ASPECT_RATIO = 0.7f
 internal fun progressText(entry: MediaListEntry): String {
     val total = entry.total?.takeIf { it > 0 }?.toString()
         ?: stringResource(R.string.mylist_unknown_total)
-    return "${entry.progress} / $total"
+    return stringResource(R.string.mylist_progress_summary, entry.progress, total)
 }
 
 /** Yalnizca kapak + baslik; en yogun gorunum. */
 @Composable
 internal fun GridListItem(
     entry: MediaListEntry,
+    releasedEpisodes: Int? = null,
+    countdown: String? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -71,6 +77,7 @@ internal fun GridListItem(
                     .align(Alignment.TopEnd)
                     .padding(4.dp),
             )
+            WatchingBadge(entry, releasedEpisodes, Modifier.align(Alignment.BottomEnd).padding(4.dp))
         }
         Text(
             text = entry.node.title,
@@ -84,6 +91,7 @@ internal fun GridListItem(
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        CountdownBadge(countdown, Modifier.padding(top = 4.dp))
     }
 }
 
@@ -91,6 +99,8 @@ internal fun GridListItem(
 @Composable
 internal fun CompactListItem(
     entry: MediaListEntry,
+    releasedEpisodes: Int? = null,
+    countdown: String? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onIncrement: () -> Unit,
@@ -128,6 +138,10 @@ internal fun CompactListItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            WatchingBadge(entry, releasedEpisodes, Modifier.padding(end = 8.dp))
+            CountdownBadge(countdown, Modifier.padding(end = 8.dp))
+        }
         ScoreBadge(score = entry.listStatus.score, modifier = Modifier.padding(end = 8.dp))
         IncrementButton(entry = entry, onIncrement = onIncrement)
     }
@@ -137,6 +151,8 @@ internal fun CompactListItem(
 @Composable
 internal fun DetailedListItem(
     entry: MediaListEntry,
+    releasedEpisodes: Int? = null,
+    countdown: String? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onIncrement: () -> Unit,
@@ -147,7 +163,7 @@ internal fun DetailedListItem(
             .fillMaxWidth()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         ),
     ) {
         Row(modifier = Modifier.padding(8.dp)) {
@@ -196,16 +212,56 @@ internal fun DetailedListItem(
                     )
                 }
             }
-            IncrementButton(
-                entry = entry,
-                onIncrement = onIncrement,
-                modifier = Modifier.align(Alignment.CenterVertically),
-            )
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                WatchingBadge(entry, releasedEpisodes, Modifier.padding(start = 6.dp))
+                CountdownBadge(countdown, Modifier.padding(start = 6.dp))
+                IncrementButton(entry = entry, onIncrement = onIncrement)
+            }
         }
     }
 }
 
 /** Son bolume ulasilmissa dugme devre disi kalir. */
+@Composable
+private fun WatchingBadge(entry: MediaListEntry, releasedEpisodes: Int?, modifier: Modifier = Modifier) {
+    if (!entry.mediaType.isAnime || entry.listStatus.status != ListStatus.WATCHING) return
+    val released = when (entry.node.airingStatus) {
+        AiringStatus.FINISHED -> entry.node.numEpisodes?.takeIf { it > 0 }
+        AiringStatus.NOT_YET_AIRED -> 0
+        else -> releasedEpisodes
+    }
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(6.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    ) {
+        Column(Modifier.padding(horizontal = 6.dp, vertical = 4.dp), horizontalAlignment = Alignment.End) {
+            Text(stringResource(R.string.mylist_watched_count, entry.progress), style = MaterialTheme.typography.labelSmall)
+            Text(
+                stringResource(R.string.mylist_released_count, released?.toString() ?: "?"),
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CountdownBadge(countdown: String?, modifier: Modifier = Modifier) {
+    if (countdown == null) return
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(6.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) {
+        Column(Modifier.padding(horizontal = 6.dp, vertical = 4.dp)) {
+            Text(stringResource(R.string.mylist_next_episode), style = MaterialTheme.typography.labelSmall)
+            Text(countdown, style = MaterialTheme.typography.labelMedium)
+        }
+    }
+}
+
 @Composable
 private fun IncrementButton(
     entry: MediaListEntry,
@@ -225,4 +281,3 @@ private fun IncrementButton(
         )
     }
 }
-

@@ -23,6 +23,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -30,6 +31,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -87,6 +89,24 @@ class DetailsViewModelTest {
         node = MediaNode(id = 5114, mediaType = MediaType.ANIME, title = details.title),
         listStatus = MyListStatus(status = status),
     )
+
+    @Test
+    fun `main content appears while optional sections are still waiting`() = runTest {
+        val pending = CompletableDeferred<AppResult<List<CharacterSummary>>>()
+        coEvery { detailsRepository.getCharacters(any(), any()) } coAnswers { pending.await() }
+        val vm = viewModel()
+        vm.uiState.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(details.title, state.details?.title)
+            assertFalse(state.isLoading)
+            assertTrue(state.characters.isEmpty())
+            pending.complete(AppResult.Success(listOf(CharacterSummary(id = 1, name = "Edward"))))
+            runCurrent()
+            assertEquals("Edward", expectMostRecentItem().characters.single().name)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 
     @Test
     @DisplayName("Tum bolumler paralel yuklenip tek durumda birlestirilir")

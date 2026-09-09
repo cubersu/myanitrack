@@ -71,6 +71,30 @@ data class MediaDetails(
         studios = studios.map { it.name },
         nsfw = nsfw,
     )
+
+    companion object {
+        /** Bir MediaNode-dan temel detay verisi olusturur (Jikan hataliysa fallback icin). */
+        fun fromNode(node: MediaNode): MediaDetails = MediaDetails(
+            id = node.id,
+            mediaType = node.mediaType,
+            title = node.title,
+            englishTitle = node.englishTitle,
+            japaneseTitle = node.japaneseTitle,
+            picture = node.picture,
+            subType = node.subType,
+            airingStatus = node.airingStatus,
+            synopsis = node.synopsis,
+            numEpisodes = node.numEpisodes,
+            numChapters = node.numChapters,
+            numVolumes = node.numVolumes,
+            startDate = node.startDate,
+            endDate = node.endDate,
+            genres = node.genres.map { NamedRef(0, it) },
+            studios = node.studios.map { NamedRef(0, it) },
+            statistics = MediaStatistics(score = node.meanScore, rank = node.rank, popularity = node.popularity),
+            nsfw = node.nsfw,
+        )
+    }
 }
 
 /** MAL tarafindaki tur/studyo/yazar gibi baglantili varliklar. */

@@ -13,6 +13,9 @@ import com.myanitrack.core.model.Friend
 import com.myanitrack.core.model.HistoryEntry
 import com.myanitrack.core.model.MediaType
 import com.myanitrack.core.model.UserProfileDetails
+import com.myanitrack.core.model.UserMediaStatistics
+import com.myanitrack.core.network.mal.MalApiService
+import com.myanitrack.core.network.mal.dto.MalUserDto
 import com.myanitrack.core.network.jikan.JikanApiService
 import com.myanitrack.core.network.jikan.dto.JikanFriendDto
 import com.myanitrack.core.network.jikan.dto.JikanHistoryDto
@@ -37,6 +40,7 @@ import kotlinx.serialization.builtins.serializer
 @Singleton
 class ProfileRepositoryImpl @Inject constructor(
     private val jikan: JikanApiService,
+    private val mal: MalApiService,
     private val rssService: MalRssService,
     private val rssParser: RssParser,
     private val cache: RemoteCache,
@@ -50,7 +54,7 @@ class ProfileRepositoryImpl @Inject constructor(
         userName: String,
         forceRefresh: Boolean,
     ): AppResult<UserProfileDetails> = withContext(ioDispatcher) {
-        cache.cachedCall(
+        val result = cache.cachedCall(
             key = "jikan:profile:${userName.lowercase()}",
             serializer = JikanUserProfileDto.serializer(),
             ttl = PROFILE_TTL,
@@ -58,6 +62,46 @@ class ProfileRepositoryImpl @Inject constructor(
         ) {
             safeApiCall { jikan.getUserProfile(userName) }.requireData()
         }.map { it.toDomain() }
+        if (!sessionStore.current()?.userName.equals(userName, ignoreCase = true)) {
+            return@withContext result
+        }
+        // Only @me is supported by the official API; never substitute it for another user.
+        val official = cache.cachedCall(
+            key = "mal:profile:v2:${userName.lowercase()}",
+            serializer = MalUserDto.serializer(),
+            ttl = PROFILE_TTL,
+            forceRefresh = forceRefresh,
+        ) { safeApiCall { mal.getMyUser() } }.map { user ->
+            UserProfileDetails(
+                userName = user.name,
+                malId = user.id,
+                imageUrl = user.picture,
+                gender = user.gender,
+                location = user.location,
+                birthday = user.birthday?.let { runCatching { java.time.LocalDate.parse(it) }.getOrNull() },
+                joinedAt = user.joinedAt?.let { runCatching { java.time.Instant.parse(it) }.getOrNull() },
+                animeStats = user.animeStatistics?.let { stats ->
+                    UserMediaStatistics(
+                        mediaType = MediaType.ANIME, daysSpent = stats.numDaysWatched,
+                        meanScore = stats.meanScore, inProgress = stats.numItemsWatching,
+                        completed = stats.numItemsCompleted, onHold = stats.numItemsOnHold,
+                        dropped = stats.numItemsDropped, planned = stats.numItemsPlanToWatch,
+                        totalEntries = stats.numItems, repeated = stats.numTimesRewatched,
+                        unitsConsumed = stats.numEpisodes,
+                    )
+                },
+            )
+        }
+        when {
+            official is AppResult.Success && result is AppResult.Success -> AppResult.Success(
+                result.data.copy(
+                    imageUrl = official.data.imageUrl?.takeIf { it.isNotBlank() } ?: result.data.imageUrl,
+                    animeStats = official.data.animeStats ?: result.data.animeStats,
+                ),
+            )
+            official is AppResult.Success -> official
+            else -> result
+        }
     }
 
     override suspend fun getHistory(

@@ -32,6 +32,12 @@ abstract class DataModule {
 
     @Binds
     @Singleton
+    abstract fun bindsEpisodeRepository(
+        impl: com.myanitrack.core.data.episodes.EpisodeRepositoryImpl,
+    ): com.myanitrack.core.domain.repository.EpisodeRepository
+
+    @Binds
+    @Singleton
     abstract fun bindsAuthRepository(impl: AuthRepositoryImpl): AuthRepository
 
     @Binds

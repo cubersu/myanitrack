@@ -24,5 +24,5 @@ object MalFields {
     /** /users/@me/mangalist icin alan listesi. */
     val MANGA_LIST = "$NODE_COMMON,num_chapters,num_volumes,$LIST_STATUS_MANGA"
 
-    val USER = "anime_statistics"
+    val USER = "picture,gender,birthday,location,joined_at,anime_statistics"
 }

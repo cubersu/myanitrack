@@ -47,8 +47,9 @@ class AiringNotifier @Inject constructor(
 
     /** Android 13+ calisma zamani izni verilmediyse bildirim gosterilemez. */
     fun canPostNotifications(): Boolean =
-        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-            PackageManager.PERMISSION_GRANTED
+        notificationManager.areNotificationsEnabled() &&
+            (android.os.Build.VERSION.SDK_INT < 33 ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
 
     /**
      * Yaklasan bolum bildirimi. [malId] hem bildirim kimligi hem de derin
@@ -97,7 +98,11 @@ class AiringNotifier @Inject constructor(
 
         // Izin calisma zamaninda geri alinmis olabilir; kontrolu gectikten sonra
         // bile SecurityException gelebilecegi icin sarmalanmis cagri.
-        runCatching { notificationManager.notify(malId, notification) }
+        try {
+            notificationManager.notify(malId, notification)
+        } catch (_: SecurityException) {
+            // Permission can be revoked after the check; skip this reminder.
+        }
     }
 
     companion object {

@@ -57,6 +57,33 @@ interface MalApiService {
     @GET
     suspend fun getListPage(@Url url: String): MalPagedResponse<MalListEntryDto>
 
+    @GET("anime/ranking")
+    suspend fun getAnimeRanking(
+        @Query("ranking_type") rankingType: String = "all",
+        @Query("limit") limit: Int = DEFAULT_PAGE_SIZE,
+        @Query("offset") offset: Int = 0,
+        @Query("fields") fields: String = MalFields.ANIME_LIST,
+    ): MalPagedResponse<MalListEntryDto>
+
+    @GET("manga/ranking")
+    suspend fun getMangaRanking(
+        @Query("ranking_type") rankingType: String = "all",
+        @Query("limit") limit: Int = DEFAULT_PAGE_SIZE,
+        @Query("offset") offset: Int = 0,
+        @Query("fields") fields: String = MalFields.MANGA_LIST,
+    ): MalPagedResponse<MalListEntryDto>
+
+    @GET("anime/season/{year}/{season}")
+    suspend fun getSeasonAnime(
+        @Path("year") year: Int,
+        @Path("season") season: String,
+        @Query("limit") limit: Int = SEARCH_PAGE_SIZE,
+        @Query("offset") offset: Int = 0,
+        @Query("nsfw") nsfw: Boolean = false,
+        @Query("sort") sort: String = "anime_score",
+        @Query("fields") fields: String = MalFields.ANIME_LIST,
+    ): MalPagedResponse<MalListEntryDto>
+
     @GET("anime/{id}")
     suspend fun getAnime(
         @Path("id") id: Int,

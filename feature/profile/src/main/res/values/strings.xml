@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="genre_fantasy">Fantasy</string>
+    <string name="genre_action">Action</string>
+    <string name="genre_adventure">Adventure</string>
+    <string name="genre_comedy">Comedy</string>
+    <string name="genre_romance">Romance</string>
+    <string name="genre_drama">Drama</string>
+    <string name="genre_mystery">Mystery</string>
+    <string name="genre_scifi">Science fiction</string>
+    <string name="profile_score_distribution">Your anime ratings</string>
+    <string name="profile_score_hint">%1$d rated · %2$d unrated in your synced list</string>
+    <string name="profile_genres">Most watched genres</string>
+    <string name="profile_genres_hint">Anime you started or completed. A title can belong to several genres.</string>
+    <string name="profile_insights_empty">Genre details are not available yet.</string>
     <string name="profile_title">Profile</string>
     <string name="profile_back">Back</string>
     <string name="profile_open_on_mal">Open on MyAnimeList</string>
@@ -41,4 +54,5 @@
     <string name="profile_feed_empty">No updates yet</string>
     <string name="profile_feed_own_hint">Updates from your friends</string>
     <string name="profile_feed_other_hint">Recent list updates</string>
+    <string name="profile_completion">Completion rate</string>
 </resources>

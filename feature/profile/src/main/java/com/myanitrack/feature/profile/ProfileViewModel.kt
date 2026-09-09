@@ -7,6 +7,9 @@ import com.myanitrack.core.common.result.AppError
 import com.myanitrack.core.common.result.AppResult
 import com.myanitrack.core.common.result.getOrNull
 import com.myanitrack.core.domain.repository.ProfileRepository
+import com.myanitrack.core.domain.repository.MediaListRepository
+import com.myanitrack.core.model.MediaListEntry
+import com.myanitrack.core.model.ListFilter
 import com.myanitrack.core.model.FeedUpdate
 import com.myanitrack.core.model.Friend
 import com.myanitrack.core.model.HistoryEntry
@@ -31,6 +34,7 @@ data class ProfileUiState(
     val isOwnProfile: Boolean = true,
     val tab: ProfileTab = ProfileTab.OVERVIEW,
     val profile: UserProfileDetails? = null,
+    val animeEntries: List<MediaListEntry> = emptyList(),
     val history: List<HistoryEntry> = emptyList(),
     val friends: List<Friend> = emptyList(),
     val feed: List<FeedUpdate> = emptyList(),
@@ -47,6 +51,7 @@ data class ProfileUiState(
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val listRepository: MediaListRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -67,6 +72,13 @@ class ProfileViewModel @Inject constructor(
                 return@launch
             }
             _uiState.update { it.copy(userName = userName) }
+            if (_uiState.value.isOwnProfile) {
+                viewModelScope.launch {
+                    listRepository.observeList(MediaType.ANIME, ListFilter(status = null, hideNsfw = false)).collect { entries ->
+                        _uiState.update { it.copy(animeEntries = entries) }
+                    }
+                }
+            }
             load(userName, forceRefresh = false)
         }
     }
@@ -113,7 +125,18 @@ class ProfileViewModel @Inject constructor(
 
         val filter = _uiState.value.historyFilter
         val result = coroutineScope {
-            val profileAsync = async { profileRepository.getProfile(userName, forceRefresh) }
+            val profileAsync = async {
+                profileRepository.getProfile(userName, forceRefresh).also { result ->
+                    _uiState.update { current ->
+                        current.copy(
+                            profile = result.getOrNull() ?: current.profile,
+                            isLoading = false,
+                            isRefreshing = false,
+                            error = (result as? AppResult.Failure)?.error,
+                        )
+                    }
+                }
+            }
             val historyAsync = async { profileRepository.getHistory(userName, filter, forceRefresh) }
             val friendsAsync = async { profileRepository.getFriends(userName, forceRefresh) }
 

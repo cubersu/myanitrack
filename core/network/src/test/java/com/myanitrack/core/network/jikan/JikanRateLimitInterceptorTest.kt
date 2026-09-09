@@ -3,6 +3,7 @@ package com.myanitrack.core.network.jikan
 import com.myanitrack.core.network.jikan.JikanRateLimitInterceptor.Companion.MAX_PER_MINUTE
 import com.myanitrack.core.network.jikan.JikanRateLimitInterceptor.Companion.MIN_INTERVAL_MS
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -29,6 +30,17 @@ class JikanRateLimitInterceptorTest {
 
     private fun interceptor(clock: FakeClock) =
         JikanRateLimitInterceptor(clock = { clock.now }, sleeper = clock::sleep)
+
+    @Test
+    fun `canceled call leaves cooldown queue without consuming a slot`() {
+        val clock = FakeClock()
+        val subject = interceptor(clock)
+        subject.applyServerBackoff(60_000L)
+        assertThrows(java.io.IOException::class.java) {
+            subject.awaitSlot { clock.now >= 1_000L }
+        }
+        assertEquals(1_000L, clock.now)
+    }
 
     @Test
     @DisplayName("Ilk istek beklemeden gecer")

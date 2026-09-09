@@ -1,5 +1,6 @@
 package com.myanitrack.core.network.jikan
 
+import java.io.IOException
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -34,7 +35,7 @@ class JikanRateLimitInterceptor(
     private val lock = Any()
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        awaitSlot()
+        awaitSlot { chain.call().isCanceled() }
         val response = chain.proceed(chain.request())
 
         if (response.code == HTTP_TOO_MANY_REQUESTS) {
@@ -49,8 +50,9 @@ class JikanRateLimitInterceptor(
      * `internal`: OkHttp 5-in `Interceptor.Chain` arayuzu testte taklit edilemeyecek
      * kadar genis oldugu icin birim testleri bu islevi dogrudan surer.
      */
-    internal fun awaitSlot() {
+    internal fun awaitSlot(isCanceled: () -> Boolean = { false }) {
         while (true) {
+            if (isCanceled()) throw IOException("Canceled")
             val waitMillis = synchronized(lock) {
                 val now = clock()
                 purgeOlderThan(now - MINUTE_WINDOW_MS)
@@ -115,10 +117,10 @@ class JikanRateLimitInterceptor(
     internal companion object {
         /**
          * Ardisik istekler arasindaki en kisa sure.
-         * 3 istek/sn siniri icin teorik alt sinir ~334 ms; saat sapmalarina karsi
-         * biraz pay birakiliyor.
+         * Jikan 3 req/sec diyor ama sunucu tarafindaki Nginx sinirlari bazen
+         * daha katı olabiliyor. 500ms (2 req/sec) cok daha guvenli bir sınır.
          */
-        const val MIN_INTERVAL_MS = 360L
+        const val MIN_INTERVAL_MS = 500L
 
         const val MAX_PER_MINUTE = 60
         const val MINUTE_WINDOW_MS = 60_000L

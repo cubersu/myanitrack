@@ -16,16 +16,9 @@ import okhttp3.ResponseBody.Companion.toResponseBody
  * [CIRCUIT_OPEN_MS] boyunca istekler AGA HIC CIKMADAN 503 ile doner. Repository
  * katmani bayat onbellege duser, kullanici bosuna beklemez. Tek bir basarili
  * yanit devreyi hemen kapatir.
- *
- * ## Neden yeniden deneyiciden DISARIDA
- * Bu interceptor zincirde [JikanRetryInterceptor]-in disinda duruyor; boylece bir
- * MANTIKSAL cagri, kac kez yeniden denenmis olursa olsun, sayaci yalnizca bir kez
- * artirir. Ic tarafta olsaydi tek bir basarisiz istek sayaci ikiye katlar ve
- * devre, Jikan aslinda calisirken bile acilirdi (orn. yalnizca ikinci sayfanin
- * onyuklemesi basarisiz oldugunda).
  */
 class JikanCircuitBreakerInterceptor(
-    private val clock: () -> Long,
+    private val clock: () -> Long = { System.currentTimeMillis() },
 ) : Interceptor {
 
     private var consecutiveFailures = 0
@@ -33,7 +26,9 @@ class JikanCircuitBreakerInterceptor(
     private val lock = Any()
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        if (isOpen()) return unavailableResponse(chain)
+        if (isOpen()) {
+            return unavailableResponse(chain)
+        }
 
         val response = chain.proceed(chain.request())
         recordOutcome(response.code)
@@ -42,29 +37,24 @@ class JikanCircuitBreakerInterceptor(
 
     internal fun isOpen(): Boolean = synchronized(lock) { clock() < openUntil }
 
-    /** Mantiksal cagrinin SONUCUNU kaydeder (yeniden denemeler dahil, tek kez). */
     internal fun recordOutcome(code: Int) {
         synchronized(lock) {
-            if (code in UPSTREAM_FAILURE_CODES || code == HTTP_TOO_MANY_REQUESTS) {
+            // 429 (Too Many Requests) artik devreyi acmiyor; JikanRateLimitInterceptor
+            // zaten bekletiyor. Devre sadece 5xx (sunucu coktuyse) hatalariyla acilir.
+            if (code in UPSTREAM_FAILURE_CODES) {
                 consecutiveFailures++
                 if (consecutiveFailures >= FAILURE_THRESHOLD) {
                     openUntil = clock() + CIRCUIT_OPEN_MS
                     consecutiveFailures = 0
                 }
-            } else {
+            } else if (code == HTTP_OK || code == HTTP_NOT_FOUND) {
+                // Basarili yanit veya kesin "yok" (404) devreyi kapatir.
                 consecutiveFailures = 0
                 openUntil = 0L
             }
         }
     }
 
-    /**
-     * Devre acikken uretilen sentetik yanit.
-     *
-     * 503 seciliyor cunku repository katmani bunu zaten
-     * [com.myanitrack.core.common.result.AppError.Server] ile esliyor ve bayat
-     * onbellege dusuyor; yeni bir hata turu eklemeye gerek yok.
-     */
     private fun unavailableResponse(chain: Interceptor.Chain): Response = Response.Builder()
         .request(chain.request())
         .protocol(Protocol.HTTP_1_1)
@@ -74,16 +64,27 @@ class JikanCircuitBreakerInterceptor(
         .build()
 
     internal companion object {
-        /** Jikan MAL-a ulasamadiginda donen kodlar. */
-        val UPSTREAM_FAILURE_CODES = setOf(500, 502, 503, 504)
+        private val UPSTREAM_FAILURE_CODES = listOf(
+            500, // Internal Server Error
+            502, // Bad Gateway
+            503, // Service Unavailable
+            504  // Gateway Timeout
+        )
 
-        const val HTTP_TOO_MANY_REQUESTS = 429
+        const val HTTP_OK = 200
+        const val HTTP_NOT_FOUND = 404
         const val HTTP_SERVICE_UNAVAILABLE = 503
 
-        /** Kac ust uste BASARISIZ CAGRIDAN sonra devre acilsin. */
-        const val FAILURE_THRESHOLD = 3
+        /**
+         * Ust uste kac hata sonrasi devre acilir.
+         *
+         * 3-ten 8-e cikarildi: Sayfa yuklenirken ayni anda bircok kaynak (karakterler,
+         * staff, oneriler vb.) istenir. Jikan kisa bir sure 504 verirse 3 hata cok
+         * cabuk birikir ve tum uygulamayi 1 dakika kilitler. 8 daha toleransli.
+         */
+        const val FAILURE_THRESHOLD = 8
 
-        /** Devre ne kadar acik kalsin. */
-        const val CIRCUIT_OPEN_MS = 60_000L
+        /** Devre ne kadar acik kalsin (ms). 60s -> 20s. */
+        const val CIRCUIT_OPEN_MS = 20_000L
     }
 }

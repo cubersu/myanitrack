@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_back">Back</string>
+    <string name="settings_language">App language</string>
+    <string name="settings_language_system">Follow system</string>
     <string name="settings_title">Settings</string>
 
     <string name="settings_section_appearance">Appearance</string>
@@ -30,6 +33,6 @@
 
     <string name="settings_section_account">Account</string>
     <string name="settings_logout">Sign out</string>
-    <string name="settings_logout_confirm">Your token and cached lists will be removed from this device.</string>
+    <string name="settings_logout_confirm">Sign out and delete all MyAniTrack data on this device? This removes saved login, website cookies, downloaded lists, preferences and unsynced changes, then closes the app. Your MyAnimeList account and synced list are not deleted.</string>
     <string name="settings_signed_in_as">Signed in as %1$s</string>
 </resources>

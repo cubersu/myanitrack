@@ -28,6 +28,7 @@ import com.myanitrack.core.network.jikan.dto.JikanVideosDto
 import com.myanitrack.core.network.jikan.mapper.toDetails
 import com.myanitrack.core.network.jikan.mapper.toDomain
 import com.myanitrack.core.network.jikan.mapper.toPromoVideos
+import com.myanitrack.core.network.mal.mapper.toDomain as toMalNode
 import com.myanitrack.core.network.util.safeApiCall
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,6 +42,7 @@ import kotlinx.serialization.builtins.ListSerializer
 @Singleton
 class MediaDetailsRepositoryImpl @Inject constructor(
     private val jikan: JikanApiService,
+    private val mal: com.myanitrack.core.network.mal.MalApiService,
     private val cache: RemoteCache,
     @Dispatcher(AppDispatcher.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : MediaDetailsRepository {
@@ -50,7 +52,7 @@ class MediaDetailsRepositoryImpl @Inject constructor(
         malId: Int,
         forceRefresh: Boolean,
     ): AppResult<MediaDetails> = withContext(ioDispatcher) {
-        cache.cachedCall(
+        val jikanResult = cache.cachedCall(
             key = cacheKey("details", mediaType, malId),
             serializer = JikanMediaDto.serializer(),
             ttl = RemoteCache.DETAILS_TTL,
@@ -59,7 +61,27 @@ class MediaDetailsRepositoryImpl @Inject constructor(
             safeApiCall {
                 if (mediaType.isAnime) jikan.getAnimeFull(malId) else jikan.getMangaFull(malId)
             }.requireData()
-        }.map { it.toDetails(mediaType) }
+        }
+
+        when (jikanResult) {
+            is AppResult.Success -> jikanResult.map { it.toDetails(mediaType) }
+            is AppResult.Failure -> {
+                // Jikan basarisiz olduysa ve onbellek bossa, resmi MAL API'sini fallback olarak kullan.
+                // (Bu veri Jikan kadar zengin degil -karakter/staff yok- ama detay ekranini kurtarir).
+                cache.cachedCall(
+                    key = "mal:details:${mediaType.name.lowercase()}:$malId",
+                    serializer = com.myanitrack.core.network.mal.dto.MalNodeDto.serializer(),
+                    ttl = RemoteCache.DETAILS_TTL,
+                    forceRefresh = forceRefresh,
+                ) {
+                    safeApiCall {
+                        if (mediaType.isAnime) mal.getAnime(malId) else mal.getManga(malId)
+                    }
+                }.map { nodeDto ->
+                    MediaDetails.fromNode(nodeDto.toMalNode(mediaType))
+                }
+            }
+        }
     }
 
     override suspend fun getCharacters(

@@ -30,6 +30,12 @@ import retrofit2.http.Query
  */
 interface JikanApiService {
 
+    @GET("anime/{id}/episodes")
+    suspend fun getAnimeEpisodes(
+        @Path("id") id: Int,
+        @Query("page") page: Int = 1,
+    ): JikanPagedResponse<com.myanitrack.core.network.jikan.dto.JikanEpisodeDto>
+
     @GET("anime/{id}/full")
     suspend fun getAnimeFull(@Path("id") id: Int): JikanResponse<JikanMediaDto>
 

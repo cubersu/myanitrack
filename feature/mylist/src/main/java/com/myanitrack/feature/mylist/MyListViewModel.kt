@@ -5,6 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.myanitrack.core.common.network.NetworkMonitor
 import com.myanitrack.core.common.result.AppError
 import com.myanitrack.core.common.result.AppResult
+import com.myanitrack.core.common.result.getOrNull
+import com.myanitrack.core.domain.repository.EpisodeRepository
+import com.myanitrack.core.domain.repository.ScheduleRepository
+import com.myanitrack.core.model.BroadcastInfo
+import com.myanitrack.core.model.AiringStatus
 import com.myanitrack.core.domain.repository.MediaListRepository
 import com.myanitrack.core.domain.repository.UserPreferencesRepository
 import com.myanitrack.core.domain.usecase.IncrementProgressUseCase
@@ -27,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -41,6 +47,8 @@ data class MyListUiState(
     val filter: ListFilter = ListFilter(),
     val viewMode: ListViewMode = ListViewMode.DETAILED_GRID,
     val entries: List<MediaListEntry> = emptyList(),
+    val allEntries: List<MediaListEntry> = emptyList(),
+    val broadcasts: Map<Int, BroadcastInfo> = emptyMap(),
     val statusCounts: Map<ListStatus, Int> = emptyMap(),
     val availableTags: List<String> = emptyList(),
     val isInitialLoading: Boolean = true,
@@ -50,6 +58,7 @@ data class MyListUiState(
     val isOffline: Boolean = false,
     val pendingSyncCount: Int = 0,
     val error: AppError? = null,
+    val releasedEpisodes: Map<Int, Int> = emptyMap(),
 ) {
     val isEmpty: Boolean get() = entries.isEmpty() && !isInitialLoading
 }
@@ -69,6 +78,8 @@ class MyListViewModel @Inject constructor(
     private val listRepository: MediaListRepository,
     private val preferencesRepository: UserPreferencesRepository,
     networkMonitor: NetworkMonitor,
+    private val episodeRepository: EpisodeRepository,
+    private val scheduleRepository: ScheduleRepository,
 ) : ViewModel() {
 
     private val mediaType = MutableStateFlow(MediaType.ANIME)
@@ -77,6 +88,8 @@ class MyListViewModel @Inject constructor(
     private val screenFilter = MutableStateFlow(ListFilter())
 
     private val transient = MutableStateFlow(TransientState())
+    private val releasedEpisodes = MutableStateFlow<Map<Int, Int>>(emptyMap())
+    private val broadcasts = MutableStateFlow<Map<Int, BroadcastInfo>>(emptyMap())
 
     /**
      * Cevrimdisi durumu ve gonderilmeyi bekleyen degisiklik sayisi.
@@ -99,7 +112,8 @@ class MyListViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), ListFilter())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val listData = combine(mediaType, effectiveFilter) { type, filter -> type to filter }
+    private val listData = combine(mediaType, effectiveFilter) { type, filter -> type to filter.copy(status = null) }
+        .distinctUntilChanged()
         .flatMapLatest { (type, filter) ->
             combine(
                 observeMyList(type, filter),
@@ -117,7 +131,9 @@ class MyListViewModel @Inject constructor(
         transient,
         connectivity,
         preferencesRepository.preferences.map { it.listViewMode }.distinctUntilChanged(),
-    ) { flags, connection, viewMode -> ScreenState(flags, connection, viewMode) }
+        releasedEpisodes,
+        broadcasts,
+    ) { flags, connection, viewMode, episodes, schedule -> ScreenState(flags, connection, viewMode, episodes, schedule) }
 
     val uiState: StateFlow<MyListUiState> = combine(
         mediaType,
@@ -132,7 +148,9 @@ class MyListViewModel @Inject constructor(
             mediaType = type,
             filter = filter,
             viewMode = viewMode,
-            entries = data.entries,
+            entries = data.entries.filter { it.mediaType == type && (filter.status == null || it.listStatus.status == filter.status) },
+            allEntries = data.entries.filter { it.mediaType == type },
+            broadcasts = screen.broadcasts,
             statusCounts = data.counts,
             availableTags = data.tags,
             isInitialLoading = flags.isInitialLoading,
@@ -142,6 +160,7 @@ class MyListViewModel @Inject constructor(
             isOffline = connection.isOffline,
             pendingSyncCount = connection.pendingCount,
             error = flags.error,
+            releasedEpisodes = screen.releasedEpisodes,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -153,6 +172,22 @@ class MyListViewModel @Inject constructor(
     val events = _events.receiveAsFlow()
 
     init {
+        viewModelScope.launch { loadBroadcasts() }
+        viewModelScope.launch {
+            listData.map { data ->
+                data.entries.filter {
+                    it.mediaType.isAnime && it.listStatus.status == ListStatus.WATCHING &&
+                        it.node.airingStatus !in setOf(AiringStatus.FINISHED, AiringStatus.NOT_YET_AIRED)
+                }.map { it.id }.distinct().sorted()
+            }.distinctUntilChanged().collectLatest { ids ->
+                // Sequential and cached: opening the list must not create a request burst.
+                ids.forEach { id ->
+                    episodeRepository.getReleasedEpisodeCount(id).getOrNull()?.let { count ->
+                        releasedEpisodes.update { it + (id to count) }
+                    }
+                }
+            }
+        }
         viewModelScope.launch {
             val prefs = preferencesRepository.preferences.first()
             mediaType.value = prefs.defaultMediaType
@@ -200,6 +235,7 @@ class MyListViewModel @Inject constructor(
     fun refresh() {
         if (transient.value.isRefreshing) return
         transient.update { it.copy(isRefreshing = true) }
+        viewModelScope.launch { loadBroadcasts() }
         viewModelScope.launch {
             val result = refreshMyList(mediaType.value)
             transient.update { it.copy(isRefreshing = false, isInitialLoading = false) }
@@ -255,6 +291,13 @@ class MyListViewModel @Inject constructor(
         if (result is AppResult.Failure && !hasCache) emitError(result.error)
     }
 
+    private suspend fun loadBroadcasts() {
+        // A single cached weekly schedule supplies every card; clock ticks never use the network.
+        scheduleRepository.getWeek().getOrNull()?.let { week ->
+            broadcasts.value = week.days.values.flatten().associate { it.id to it.broadcast }
+        }
+    }
+
     private suspend fun emitError(error: AppError) {
         transient.update { it.copy(error = error) }
         _events.send(MyListEvent.ShowError(error))
@@ -267,6 +310,8 @@ class MyListViewModel @Inject constructor(
         val flags: TransientState,
         val connectivity: Connectivity,
         val viewMode: ListViewMode,
+        val releasedEpisodes: Map<Int, Int>,
+        val broadcasts: Map<Int, BroadcastInfo>,
     )
 
     private data class ListData(

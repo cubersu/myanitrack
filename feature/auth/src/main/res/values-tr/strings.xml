@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="login_subtitle">Anime ve manga listelerinizi yonetmek icin MyAnimeList hesabinizla giris yapin.</string>
-    <string name="login_action">MyAnimeList ile giris yap</string>
-    <string name="login_completing">Giris tamamlaniyor…</string>
-    <string name="login_missing_client_id">MAL_CLIENT_ID tanimli degil. local.properties dosyasina ekleyip uygulamayi yeniden derleyin.</string>
+    <string name="login_subtitle">Anime ve manga listelerinizi yönetmek için MyAnimeList hesabınızla giriş yapın.</string>
+    <string name="login_action">MyAnimeList ile giriş yap</string>
+    <string name="login_completing">Giriş tamamlanıyor…</string>
+    <string name="login_missing_client_id">MAL_CLIENT_ID tanımlı değil. local.properties dosyasına ekleyip uygulamayı yeniden derleyin.</string>
 </resources>

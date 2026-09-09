@@ -48,6 +48,8 @@ class MyListViewModelTest {
 
     private val listRepository = mockk<MediaListRepository>(relaxed = true)
     private val preferencesRepository = mockk<UserPreferencesRepository>(relaxed = true)
+    private val episodeRepository = mockk<com.myanitrack.core.domain.repository.EpisodeRepository>()
+    private val scheduleRepository = mockk<com.myanitrack.core.domain.repository.ScheduleRepository>()
     private val entriesFlow = MutableStateFlow(listOf(entry(1, progress = 3)))
     private val networkMonitor = mockk<NetworkMonitor>()
     private val isOnline = MutableStateFlow(true)
@@ -64,6 +66,8 @@ class MyListViewModelTest {
 
     @BeforeEach
     fun setUp() {
+        coEvery { scheduleRepository.getWeek(any()) } returns AppResult.Success(com.myanitrack.core.model.WeeklySchedule())
+        coEvery { episodeRepository.getReleasedEpisodeCount(any()) } returns AppResult.Success(8)
         every { preferencesRepository.preferences } returns flowOf(UserPreferences())
         every { listRepository.observeList(any(), any()) } returns entriesFlow
         every { listRepository.observeStatusCounts(any()) } returns
@@ -82,7 +86,35 @@ class MyListViewModelTest {
         listRepository = listRepository,
         preferencesRepository = preferencesRepository,
         networkMonitor = networkMonitor,
+        episodeRepository = episodeRepository,
+        scheduleRepository = scheduleRepository,
     )
+
+    @Test
+    fun `released count does not use planned total or refetch on progress change`() = runTest {
+        val vm = viewModel()
+        vm.uiState.test {
+            advanceUntilIdle()
+            assertEquals(8, expectMostRecentItem().releasedEpisodes[1])
+            entriesFlow.value = listOf(entry(1, progress = 4, total = 12))
+            advanceUntilIdle()
+            assertEquals(4, expectMostRecentItem().entries.single().progress)
+            coVerify(exactly = 1) { episodeRepository.getReleasedEpisodeCount(1) }
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `finished anime does not request episode pages`() = runTest {
+        val old = entry(1)
+        entriesFlow.value = listOf(old.copy(node = old.node.copy(airingStatus = com.myanitrack.core.model.AiringStatus.FINISHED)))
+        val vm = viewModel()
+        vm.uiState.test {
+            advanceUntilIdle()
+            coVerify(exactly = 0) { episodeRepository.getReleasedEpisodeCount(any()) }
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 
     @Test
     @DisplayName("Acilista onbellekteki liste, sayimlar ve etiketler yayinlanir")
@@ -113,12 +145,22 @@ class MyListViewModelTest {
     @Test
     @DisplayName("Durum sekmesi degisince filtre guncellenir")
     fun `changes status filter`() = runTest {
+        val completed = entry(2).let { it.copy(listStatus = it.listStatus.copy(status = ListStatus.COMPLETED)) }
+        entriesFlow.value = entriesFlow.value + completed
         val vm = viewModel()
         vm.uiState.test {
             advanceUntilIdle()
             vm.selectStatus(ListStatus.COMPLETED)
             advanceUntilIdle()
-            assertEquals(ListStatus.COMPLETED, expectMostRecentItem().filter.status)
+            val state = expectMostRecentItem()
+            assertEquals(ListStatus.COMPLETED, state.filter.status)
+            assertEquals(listOf(2), state.entries.map { it.id })
+            assertEquals(listOf(1, 2), state.allEntries.map { it.id })
+            vm.selectStatus(null)
+            advanceUntilIdle()
+            assertEquals(listOf(1, 2), expectMostRecentItem().entries.map { it.id })
+            coVerify(exactly = 1) { listRepository.refresh(any()) }
+            coVerify(exactly = 1) { scheduleRepository.getWeek(any()) }
             cancelAndIgnoreRemainingEvents()
         }
     }

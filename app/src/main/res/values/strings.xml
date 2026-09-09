@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MyAniTrack</string>
+    <string name="app_name" translatable="false">MyAniTrack</string>
     <string name="nav_my_list">My List</string>
     <string name="nav_browse">Browse</string>
     <string name="nav_calendar">Calendar</string>

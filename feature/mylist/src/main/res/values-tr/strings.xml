@@ -1,28 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="mylist_progress_summary">İlerleme: %1$d / %2$s</string>
+    <string name="mylist_next_episode">Yeni bölüm</string>
+    <string name="mylist_title">Listem</string>
+    <string name="mylist_settings">Ayarlar</string>
+    <string name="mylist_watched_count">%1$d izlendi</string>
+    <string name="mylist_released_count">%1$s yayınlandı</string>
 
     <string name="view_mode_grid">Izgara</string>
     <string name="view_mode_compact">Kompakt</string>
-    <string name="view_mode_detailed">Detayli</string>
+    <string name="view_mode_detailed">Detaylı</string>
 
-    <string name="sort_title">Baslik</string>
-    <string name="sort_score">Puanim</string>
-    <string name="sort_progress">Ilerleme</string>
-    <string name="sort_last_updated">Son guncelleme</string>
-    <string name="sort_start_date">Yayin tarihi</string>
-    <string name="sort_mean_score">MAL puani</string>
-    <string name="sort_popularity">Populerlik</string>
+    <string name="sort_title">Başlık</string>
+    <string name="sort_score">Puanım</string>
+    <string name="sort_progress">İlerleme</string>
+    <string name="sort_last_updated">Son güncelleme</string>
+    <string name="sort_start_date">Yayın tarihi</string>
+    <string name="sort_mean_score">MAL puanı</string>
+    <string name="sort_popularity">Popülerlik</string>
 
     <string name="mylist_search">Ara</string>
     <string name="mylist_search_placeholder">Listede ara</string>
-    <string name="mylist_sort">Sirala</string>
-    <string name="mylist_view_mode">Gorunum</string>
-    <string name="mylist_increment_progress">Bir artir</string>
-    <string name="mylist_empty_title">Burada henuz bir sey yok</string>
-    <string name="mylist_empty_description">Bu duruma ya da filtreye uyan kayit yok. MyAnimeList ile esitlemek icin asagi cekin.</string>
-    <string name="mylist_entry_deleted">%1$s listenizden kaldirildi</string>
-    <string name="mylist_offline">Cevrimdisi - degisiklikler baglanti gelince gonderilecek</string>
-    <string name="mylist_pending_sync">%1$d degisiklik gonderilmeyi bekliyor</string>
-    <string name="mylist_offline_with_pending">Cevrimdisi - %1$d degisiklik gonderilmeyi bekliyor</string>
+    <string name="mylist_sort">Sırala</string>
+    <string name="mylist_view_mode">Görünüm</string>
+    <string name="mylist_increment_progress">Bir artır</string>
+    <string name="mylist_empty_title">Burada henüz bir şey yok</string>
+    <string name="mylist_empty_description">Bu duruma ya da filtreye uyan kayıt yok. MyAnimeList ile eşitlemek için aşağı çekin.</string>
+    <string name="mylist_entry_deleted">%1$s listenizden kaldırıldı</string>
+    <string name="mylist_offline">Çevrimdışı - değişiklikler bağlantı gelince gönderilecek</string>
+    <string name="mylist_pending_sync">%1$d değişiklik gönderilmeyi bekliyor</string>
+    <string name="mylist_offline_with_pending">Çevrimdışı - %1$d değişiklik gönderilmeyi bekliyor</string>
 
 </resources>

@@ -23,7 +23,7 @@ import com.myanitrack.core.model.PromoVideo
 import com.myanitrack.core.model.StaffSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -73,6 +73,7 @@ class DetailsViewModel @Inject constructor(
     private val args = DetailsArgs(savedStateHandle)
 
     private val loaded = MutableStateFlow(LoadedData())
+    private var loadJob: Job? = null
 
     val uiState: StateFlow<DetailsUiState> = combine(
         loaded,
@@ -81,7 +82,8 @@ class DetailsViewModel @Inject constructor(
         DetailsUiState(
             mediaType = args.mediaType,
             malId = args.malId,
-            details = data.details,
+            // Jikan verisi yoksa listedeki temel veriyi (title, image vb.) kullan.
+            details = data.details ?: entry?.node?.let { MediaDetails.fromNode(it) },
             listEntry = entry,
             characters = data.characters,
             staff = data.staff,
@@ -147,13 +149,14 @@ class DetailsViewModel @Inject constructor(
     }
 
     /**
-     * Detay, karakter, staff, oneri ve videolar paralel cekilir.
+     * Ana detay once gosterilir; yardimci bolumler ardindan paralel yuklenir.
      *
      * Yalnizca ANA detay cagrisinin basarisizligi ekrani hata durumuna dusurur;
      * yardimci bolumler bos kalabilir. Boylece Jikan-in tekil uc noktalarindan
      * biri 504 verdiginde sayfanin geri kalani yine de gosterilir.
      */
     private fun load(forceRefresh: Boolean) {
+        loadJob?.cancel()
         loaded.update {
             it.copy(
                 isLoading = it.details == null,
@@ -162,38 +165,46 @@ class DetailsViewModel @Inject constructor(
             )
         }
 
-        viewModelScope.launch {
+        loadJob = viewModelScope.launch {
             val type = args.mediaType
             val id = args.malId
 
-            val loadedData = coroutineScope {
-                val detailsAsync = async { detailsRepository.getDetails(type, id, forceRefresh) }
-                val charactersAsync = async { detailsRepository.getCharacters(type, id) }
-                val staffAsync = async { detailsRepository.getStaff(type, id) }
-                val recommendationsAsync = async { detailsRepository.getRecommendations(type, id) }
-                val videosAsync = async { detailsRepository.getPromoVideos(type, id) }
-
-                val detailsResult = detailsAsync.await()
-                LoadedData(
-                    details = detailsResult.getOrNull(),
-                    characters = charactersAsync.await().getOrNull().orEmpty(),
-                    staff = staffAsync.await().getOrNull().orEmpty(),
-                    recommendations = recommendationsAsync.await().getOrNull().orEmpty(),
-                    promoVideos = videosAsync.await().getOrNull().orEmpty(),
+            // Publish the main content before requesting optional enrichment.
+            val detailsResult = detailsRepository.getDetails(type, id, forceRefresh)
+            loaded.update { current ->
+                current.copy(
+                    details = detailsResult.getOrNull() ?: current.details,
                     isLoading = false,
                     isRefreshing = false,
                     error = (detailsResult as? AppResult.Failure)?.error,
                 )
             }
-
-            loaded.update { current ->
-                loadedData.copy(
-                    // Ana cagri basarisizsa elde ne varsa koru.
-                    details = loadedData.details ?: current.details,
-                    isEditing = current.isEditing,
-                )
+            if (detailsResult is AppResult.Failure) {
+                _events.send(DetailsEvent.ShowError(detailsResult.error))
+                return@launch
             }
-            loadedData.error?.let { _events.send(DetailsEvent.ShowError(it)) }
+            coroutineScope {
+                launch {
+                    detailsRepository.getCharacters(type, id).getOrNull()?.let { value ->
+                        loaded.update { it.copy(characters = value) }
+                    }
+                }
+                launch {
+                    detailsRepository.getStaff(type, id).getOrNull()?.let { value ->
+                        loaded.update { it.copy(staff = value) }
+                    }
+                }
+                launch {
+                    detailsRepository.getRecommendations(type, id).getOrNull()?.let { value ->
+                        loaded.update { it.copy(recommendations = value) }
+                    }
+                }
+                launch {
+                    detailsRepository.getPromoVideos(type, id).getOrNull()?.let { value ->
+                        loaded.update { it.copy(promoVideos = value) }
+                    }
+                }
+            }
         }
     }
 

@@ -1,0 +1,19 @@
+Uygulama adı: MyAniTrack
+Geliştirici: TairyFail
+Destek: tairyfailsupport@gmail.com
+
+Kısa açıklama:
+Anime ve manga listelerini takip et, yeni bölümleri ve istatistiklerini gör.
+
+Tam açıklama:
+MyAniTrack, MyAnimeList hesabındaki anime ve manga listelerini düzenlemek için geliştirilmiş bağımsız bir takip uygulamasıdır.
+
+• İzleme ve okuma ilerlemeni, puanlarını ve listelerini yönet.
+• Durum sekmeleri arasında kaydırarak gezin.
+• Yayınlanan bölümleri ve yaklaşan yayınlar için geri sayımı gör.
+• Yeni yapımları keşfet, sezonlara ve sıralamalara göz at.
+• Profilinde durum dağılımını, puanlarını ve en çok izlediğin türleri incele.
+• Türkçe veya İngilizce arayüz, açık/koyu tema ve farklı liste görünümlerini kullan.
+• Çevrimdışıyken kaydedilmiş listene eriş; değişikliklerini bağlantı geldiğinde eşitle.
+
+MyAnimeList hesabı gerekir. Bazı içerik ve yayın bilgileri üçüncü taraf hizmetlerin kullanılabilirliğine bağlıdır. MyAniTrack video izleme veya indirme hizmeti sunmaz. MyAnimeList'in resmi uygulaması değildir ve MyAnimeList tarafından onaylanmamıştır.

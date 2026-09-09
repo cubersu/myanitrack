@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="legal_privacy">Privacy and data deletion</string>
+    <string name="legal_credits">About and credits</string>
+    <string name="legal_licenses">Open-source licenses</string>
+    <string name="season_winter">Winter</string>
+    <string name="season_spring">Spring</string>
+    <string name="season_summer">Summer</string>
+    <string name="season_fall">Fall</string>
+    <string name="airing_finished">Finished</string>
+    <string name="airing_ongoing">Airing</string>
+    <string name="airing_publishing">Publishing</string>
+    <string name="airing_upcoming">Not yet released</string>
+    <string name="airing_unknown">Unknown</string>
     <!-- Hata mesajlari -->
     <string name="error_network">No connection. Check your network and try again.</string>
     <string name="error_unauthorized">Your session expired. Please sign in again.</string>
@@ -7,7 +19,7 @@
     <string name="error_not_found">Not found on MyAnimeList.</string>
     <string name="error_rate_limited">Too many requests. Please wait a moment.</string>
     <string name="error_rate_limited_seconds">Too many requests. Try again in %1$d seconds.</string>
-    <string name="error_server">MyAnimeList is not responding right now. This is on their side - cached content still works. Try again in a few minutes.</string>
+    <string name="error_server">The data service is not responding right now. Please try again shortly.</string>
     <string name="error_http">Request failed (%1$d).</string>
     <string name="error_serialization">Unexpected response from MyAnimeList.</string>
     <string name="error_storage">Could not read local data.</string>
