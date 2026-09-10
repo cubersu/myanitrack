@@ -26,8 +26,18 @@ fun NavController.navigateToMediaDetails(mediaType: MediaType, malId: Int) {
 fun NavGraphBuilder.mediaDetailsScreen(
     onBack: () -> Unit,
     onOpenMedia: (MediaType, Int) -> Unit,
+    onOpenPerson: (Int, Boolean) -> Unit,
+    isGuest: Boolean,
+    onLogin: () -> Unit,
 ) {
     composable<MediaDetailsRoute> {
-        DetailsRoute(onBack = onBack, onOpenMedia = onOpenMedia)
+        DetailsRoute(onBack = onBack, onOpenMedia = onOpenMedia, onOpenPerson = onOpenPerson, isGuest = isGuest, onLogin = onLogin)
     }
+}
+
+@Serializable
+data class PersonDestination(val id: Int, val isCharacter: Boolean)
+
+fun NavGraphBuilder.personDetailsScreen(onBack: () -> Unit) {
+    composable<PersonDestination> { com.myanitrack.feature.details.PersonScreen(onBack = onBack) }
 }

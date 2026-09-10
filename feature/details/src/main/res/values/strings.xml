@@ -49,4 +49,9 @@
     <string name="details_status_dropped">Dropped</string>
     <string name="details_status_plan_to_watch">Plan to watch</string>
     <string name="details_status_plan_to_read">Plan to read</string>
+<string name="person_title">Person details</string>
+<string name="person_favorites">Favorites: %1$d</string>
+<string name="person_no_bio">No biography available.</string>
+<string name="details_login_to_add">Sign in to add to your list</string>
+<string name="person_unavailable">Person information could not be loaded</string>
 </resources>

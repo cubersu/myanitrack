@@ -75,6 +75,9 @@ private const val COVER_ASPECT_RATIO = 0.7f
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailsRoute(
+    onOpenPerson: (Int, Boolean) -> Unit,
+    isGuest: Boolean = false,
+    onLogin: () -> Unit = {},
     onBack: () -> Unit,
     onOpenMedia: (MediaType, Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -154,13 +157,16 @@ fun DetailsRoute(
             )
 
             else -> DetailsContent(
+                isGuest = isGuest,
+                onLogin = onLogin,
                 uiState = uiState,
                 details = details,
                 reviewsCount = reviews.itemCount,
                 reviewAt = { index -> reviews[index] },
                 reviewKey = reviews.itemKey { it.id },
                 onOpenMedia = onOpenMedia,
-                onAddToList = viewModel::addToList,
+                onAddToList = { if (isGuest) onLogin() else viewModel.addToList(it) },
+                onOpenPerson = onOpenPerson,
                 onEditClick = viewModel::startEditing,
                 onPlayVideo = { video -> video.watchUrl?.let(openUrl) },
                 modifier = Modifier
@@ -183,6 +189,9 @@ fun DetailsRoute(
 
 @Composable
 private fun DetailsContent(
+    isGuest: Boolean,
+    onLogin: () -> Unit,
+    onOpenPerson: (Int, Boolean) -> Unit,
     uiState: DetailsUiState,
     details: MediaDetails,
     reviewsCount: Int,
@@ -197,6 +206,8 @@ private fun DetailsContent(
     LazyColumn(modifier = modifier) {
         item(key = "header") {
             DetailsHeader(
+                isGuest = isGuest,
+                onLogin = onLogin,
                 details = details,
                 uiState = uiState,
                 onAddToList = onAddToList,
@@ -236,14 +247,14 @@ private fun DetailsContent(
         if (uiState.characters.isNotEmpty()) {
             item(key = "characters") {
                 SectionTitle(stringResource(R.string.details_section_characters))
-                CharacterRow(characters = uiState.characters.take(MAX_ROW_ITEMS))
+                CharacterRow(characters = uiState.characters.take(MAX_ROW_ITEMS), onClick = { onOpenPerson(it, true) })
             }
         }
 
         if (uiState.staff.isNotEmpty()) {
             item(key = "staff") {
                 SectionTitle(stringResource(R.string.details_section_staff))
-                StaffRow(staff = uiState.staff.take(MAX_ROW_ITEMS))
+                StaffRow(staff = uiState.staff.take(MAX_ROW_ITEMS), onClick = { onOpenPerson(it, false) })
             }
         }
 
@@ -295,6 +306,8 @@ private fun DetailsContent(
 
 @Composable
 private fun DetailsHeader(
+    isGuest: Boolean,
+    onLogin: () -> Unit,
     details: MediaDetails,
     uiState: DetailsUiState,
     onAddToList: (ListStatus) -> Unit,
@@ -348,7 +361,11 @@ private fun DetailsHeader(
 
         Spacer(Modifier.height(12.dp))
 
-        if (uiState.isInList) {
+        if (isGuest) {
+            Button(onClick = onLogin, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.details_login_to_add))
+            }
+        } else if (uiState.isInList) {
             Button(onClick = onEditClick, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.Edit, contentDescription = null)
                 Text(

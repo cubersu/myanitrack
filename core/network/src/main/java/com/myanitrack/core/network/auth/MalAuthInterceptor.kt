@@ -21,7 +21,10 @@ class MalAuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val token = runBlocking { tokenRefresher.currentAccessToken() }
         val request = chain.request().newBuilder()
-            .apply { if (!token.isNullOrBlank()) header(HEADER_AUTHORIZATION, "Bearer $token") }
+            .apply {
+                if (!token.isNullOrBlank()) header(HEADER_AUTHORIZATION, "Bearer $token")
+                else if (MalAuthConfig.isConfigured) header("X-MAL-CLIENT-ID", MalAuthConfig.clientId)
+            }
             .build()
         return chain.proceed(request)
     }

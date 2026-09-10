@@ -27,6 +27,7 @@ import com.myanitrack.R
 import com.myanitrack.core.model.MediaType
 import com.myanitrack.feature.browse.BrowseRoute
 import com.myanitrack.feature.calendar.CalendarRoute
+import com.myanitrack.feature.details.navigation.personDetailsScreen
 import com.myanitrack.feature.details.navigation.mediaDetailsScreen
 import com.myanitrack.feature.details.navigation.navigateToMediaDetails
 import com.myanitrack.feature.forum.navigation.forumScreen
@@ -65,6 +66,9 @@ data object NewsDestination
 
 @Serializable
 data object ProfileDestination
+
+@Serializable
+data object LoginDestination
 
 @Serializable
 data object SettingsDestination
@@ -110,6 +114,7 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    isGuest: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val openMedia: (MediaType, Int) -> Unit = { mediaType, malId ->
@@ -123,7 +128,7 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = MyListDestination,
+        startDestination = if (isGuest) BrowseDestination else MyListDestination,
         modifier = modifier,
         // Detay/profil gibi ic ekranlar yandan kayar, geri donus tersine calisir.
         enterTransition = {
@@ -152,6 +157,9 @@ fun AppNavHost(
         },
     ) {
         mainGraph(
+            isGuest = isGuest,
+            onOpenLogin = { navController.navigate(LoginDestination) },
+            onOpenPerson = { id, character -> navController.navigate(com.myanitrack.feature.details.navigation.PersonDestination(id, character)) },
             onBack = { navController.popBackStack() },
             onOpenMedia = openMedia,
             onOpenUser = openUser,
@@ -164,6 +172,9 @@ fun AppNavHost(
 }
 
 private fun NavGraphBuilder.mainGraph(
+    isGuest: Boolean,
+    onOpenLogin: () -> Unit,
+    onOpenPerson: (Int, Boolean) -> Unit,
     onBack: () -> Unit,
     onOpenMedia: (MediaType, Int) -> Unit,
     onOpenUser: (String) -> Unit,
@@ -172,14 +183,16 @@ private fun NavGraphBuilder.mainGraph(
     onOpenMessages: () -> Unit,
     onOpenComments: (Int) -> Unit,
 ) {
+    composable<LoginDestination> { com.myanitrack.feature.auth.LoginRoute(onLoggedIn = onBack) }
+    personDetailsScreen(onBack)
     // Sekmeler arasi gecis kaymamali: kullanici hiyerarside ilerlemiyor, yer degistiriyor.
-    topLevelComposable<MyListDestination> { MyListRoute(onOpenDetails = onOpenMedia, onOpenSettings = onOpenSettings) }
+    topLevelComposable<MyListDestination> { if (isGuest) com.myanitrack.feature.auth.LoginRoute(onLoggedIn = {}) else MyListRoute(onOpenDetails = onOpenMedia, onOpenSettings = onOpenSettings) }
     topLevelComposable<BrowseDestination> { BrowseRoute(onOpenMedia = onOpenMedia) }
     topLevelComposable<CalendarDestination> { CalendarRoute(onOpenMedia = onOpenMedia) }
     topLevelComposable<NewsDestination> { NewsRoute() }
     topLevelComposable<ProfileDestination> {
         // Sekmeden acilan kendi profilimiz: geri dugmesi yok, ayarlar buradan aciliyor.
-        ProfileRoute(
+        if (isGuest) com.myanitrack.feature.auth.LoginRoute(onLoggedIn = {}) else ProfileRoute(
             onOpenMedia = onOpenMedia,
             onOpenUser = onOpenUser,
             onOpenSettings = onOpenSettings,
@@ -189,7 +202,7 @@ private fun NavGraphBuilder.mainGraph(
         )
     }
     composable<SettingsDestination> { SettingsRoute(onBack = onBack) }
-    mediaDetailsScreen(onBack = onBack, onOpenMedia = onOpenMedia)
+    mediaDetailsScreen(onBack = onBack, onOpenMedia = onOpenMedia, onOpenPerson = onOpenPerson, isGuest = isGuest, onLogin = { onOpenLogin() })
     userProfileScreen(onBack = onBack, onOpenMedia = onOpenMedia, onOpenUser = onOpenUser)
 
     // Kirilgan moduller: MAL API-si olmayan bolumler WebView ile aciliyor.

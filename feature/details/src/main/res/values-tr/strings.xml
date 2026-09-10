@@ -49,4 +49,9 @@
     <string name="details_status_dropped">Bırakıldı</string>
     <string name="details_status_plan_to_watch">İzlenecek</string>
     <string name="details_status_plan_to_read">Okunacak</string>
+<string name="person_title">Kişi bilgileri</string>
+<string name="person_favorites">Favoriler: %1$d</string>
+<string name="person_no_bio">Biyografi bilgisi bulunmuyor.</string>
+<string name="details_login_to_add">Listene eklemek için giriş yap</string>
+<string name="person_unavailable">Kişi bilgileri yüklenemedi</string>
 </resources>

@@ -28,6 +28,7 @@ import com.myanitrack.navigation.navigateToTopLevel
 /** Giris yapilmis kullanicinin gordugu ana kabuk. */
 @Composable
 fun MyAniTrackApp(
+    isGuest: Boolean = false,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     viewModel: DeepLinkViewModel = hiltViewModel(),
@@ -77,6 +78,7 @@ fun MyAniTrackApp(
     ) { padding ->
         AppNavHost(
             navController = navController,
+            isGuest = isGuest,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),

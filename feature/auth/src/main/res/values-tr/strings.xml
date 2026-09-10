@@ -4,4 +4,5 @@
     <string name="login_action">MyAnimeList ile giriş yap</string>
     <string name="login_completing">Giriş tamamlanıyor…</string>
     <string name="login_missing_client_id">MAL_CLIENT_ID tanımlı değil. local.properties dosyasına ekleyip uygulamayı yeniden derleyin.</string>
+    <string name="login_guest">Giriş yapmadan devam et</string>
 </resources>

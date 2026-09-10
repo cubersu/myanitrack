@@ -45,6 +45,9 @@ abstract class DataModule {
     abstract fun bindsMediaListRepository(impl: MediaListRepositoryImpl): MediaListRepository
 
     @Binds
+    abstract fun bindsPersonRepository(impl: com.myanitrack.core.data.details.PersonRepositoryImpl): com.myanitrack.core.domain.repository.PersonRepository
+
+    @Binds
     @Singleton
     abstract fun bindsMediaDetailsRepository(
         impl: MediaDetailsRepositoryImpl,

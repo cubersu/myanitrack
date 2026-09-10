@@ -12,6 +12,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,12 +68,20 @@ class MainActivity : AppCompatActivity() {
             }
 
             MyAniTrackTheme(darkTheme = darkTheme, useDynamicColor = state.useDynamicColor) {
+                var guest by rememberSaveable { mutableStateOf(getPreferences(MODE_PRIVATE).getBoolean("guest", false)) }
                 when (state.authState) {
                     AuthState.Loading -> Unit // Acilis ekrani gosteriliyor.
 
                     AuthState.LoggedOut ->
                         // Giris tamamlaninca authState akisi ekrani kendiliginden degistirir.
-                        LoginRoute(onLoggedIn = {})
+                        if (guest) {
+                            MyAniTrackApp(isGuest = true)
+                        } else {
+                            LoginRoute(onLoggedIn = {}, onContinueAsGuest = {
+                                getPreferences(MODE_PRIVATE).edit().putBoolean("guest", true).apply()
+                                guest = true
+                            })
+                        }
 
                     is AuthState.LoggedIn -> {
                         NotificationPermissionRequest()

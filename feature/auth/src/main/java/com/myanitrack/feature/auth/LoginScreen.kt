@@ -44,6 +44,7 @@ import com.myanitrack.core.ui.toUserMessage
 @Composable
 fun LoginRoute(
     onLoggedIn: () -> Unit,
+    onContinueAsGuest: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
@@ -90,6 +91,7 @@ fun LoginRoute(
         LoginScreen(
             uiState = uiState,
             onSignInClick = viewModel::startLogin,
+            onContinueAsGuest = onContinueAsGuest,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
@@ -101,6 +103,7 @@ fun LoginRoute(
 internal fun LoginScreen(
     uiState: LoginUiState,
     onSignInClick: () -> Unit,
+    onContinueAsGuest: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -127,6 +130,12 @@ internal fun LoginScreen(
         if (!uiState.isClientConfigured) {
             MissingClientIdCard()
             Spacer(Modifier.height(24.dp))
+        }
+
+        onContinueAsGuest?.let { proceed ->
+            androidx.compose.material3.TextButton(onClick = proceed, enabled = !uiState.isExchangingToken) {
+                Text(stringResource(R.string.login_guest))
+            }
         }
 
         if (uiState.isExchangingToken) {

@@ -5,4 +5,5 @@
     <string name="login_action">Sign in with MyAnimeList</string>
     <string name="login_completing">Completing sign-in…</string>
     <string name="login_missing_client_id">MAL_CLIENT_ID is not set. Add it to local.properties and rebuild the app.</string>
+    <string name="login_guest">Continue without signing in</string>
 </resources>

@@ -124,7 +124,7 @@ internal fun ChipRow(
 }
 
 @Composable
-internal fun CharacterRow(characters: List<CharacterSummary>, modifier: Modifier = Modifier) {
+internal fun CharacterRow(characters: List<CharacterSummary>, onClick: (Int) -> Unit, modifier: Modifier = Modifier) {
     LazyRow(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -132,7 +132,7 @@ internal fun CharacterRow(characters: List<CharacterSummary>, modifier: Modifier
     ) {
         items(characters, key = { it.id }) { character ->
             Column(
-                modifier = Modifier.width(84.dp),
+                modifier = Modifier.width(84.dp).clickable { onClick(character.id) },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 MediaCover(
@@ -167,7 +167,7 @@ internal fun CharacterRow(characters: List<CharacterSummary>, modifier: Modifier
 }
 
 @Composable
-internal fun StaffRow(staff: List<StaffSummary>, modifier: Modifier = Modifier) {
+internal fun StaffRow(staff: List<StaffSummary>, onClick: (Int) -> Unit, modifier: Modifier = Modifier) {
     LazyRow(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -175,7 +175,7 @@ internal fun StaffRow(staff: List<StaffSummary>, modifier: Modifier = Modifier) 
     ) {
         items(staff, key = { it.id }) { person ->
             Column(
-                modifier = Modifier.width(84.dp),
+                modifier = Modifier.width(84.dp).clickable { onClick(person.id) },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 MediaCover(
